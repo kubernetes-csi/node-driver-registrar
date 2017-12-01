@@ -32,7 +32,7 @@ driver-registrar:
 clean:
 	-rm -rf driver-registrar deploy/docker/driver-registrar
 
-container: csi-attacher
+container: driver-registrar
 	cp driver-registrar deploy/docker
 	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) deploy/docker
 
