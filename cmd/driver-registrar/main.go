@@ -17,9 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,31 +30,75 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/retry"
+
+	"github.com/kubernetes-csi/driver-registrar/pkg/connection"
 )
 
 const (
-	// Name of node label that contains JSON map of driver names to node names
-	labelKey = "csi.volume.kubernetes.io/nodeid"
+	// Name of node annotation that contains JSON map of driver names to node
+	// names
+	annotationKey = "csi.volume.kubernetes.io/nodeid"
+
+	// Default timeout of short CSI calls like GetPluginInfo
+	csiTimeout = time.Second
 )
 
 // Command line flags
 var (
-	kubeconfig = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
+	kubeconfig        = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
+	connectionTimeout = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
+	csiAddress        = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
 )
 
 func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	// Fetch node name from environemnt label
+	// Fetch node name from environemnt annotation
 	nodeName := os.Getenv("KUBE_NODE_NAME")
 	if nodeName == "" {
-		glog.Error(fmt.Errorf("Node name not found. The environment variable KUBE_NODE_NAME is empty."))
+		glog.Error(fmt.Errorf(
+			"Node name not found. The environment variable KUBE_NODE_NAME is empty."))
 		os.Exit(1)
 	}
 
+	// Once https://github.com/container-storage-interface/spec/issues/159 is
+	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
+	// can skip adding mappting to "csi.volume.kubernetes.io/nodeid" annotation.
+
+	// Connect to CSI.
+	glog.V(1).Infof("Attempting to open a gRPC connection with: %q", csiAddress)
+	csiConn, err := connection.NewConnection(*csiAddress, *connectionTimeout)
+	if err != nil {
+		glog.Error(err.Error())
+		os.Exit(1)
+	}
+
+	// Get CSI driver name.
+	glog.V(1).Infof("Calling CSI driver to discover driver name.")
+	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
+	defer cancel()
+	driverName, err := csiConn.GetDriverName(ctx)
+	if err != nil {
+		glog.Error(err.Error())
+		os.Exit(1)
+	}
+	glog.V(2).Infof("CSI driver name: %q", driverName)
+
+	// Get CSI Driver Node ID
+	glog.V(1).Infof("Calling CSI driver to discover node ID.")
+	ctx, cancel = context.WithTimeout(context.Background(), csiTimeout)
+	defer cancel()
+	csiDriverNodeId, err := csiConn.GetNodeID(ctx)
+	if err != nil {
+		glog.Error(err.Error())
+		os.Exit(1)
+	}
+	glog.V(2).Infof("CSI driver node ID: %q", csiDriverNodeId)
+
 	// Create the client config. Use kubeconfig if given, otherwise assume
 	// in-cluster.
+	glog.V(1).Infof("Loading kubeconfig.")
 	config, err := buildConfig(*kubeconfig)
 	if err != nil {
 		glog.Error(err.Error())
@@ -64,38 +111,72 @@ func main() {
 		os.Exit(1)
 	}
 
+	glog.V(1).Infof("Attempt to update node annotation if needed")
 	nodesClient := clientset.CoreV1().Nodes()
-	// nodeObj, err := nodesClient.Get(nodeName, metav1.GetOptions{})
-	// if errors.IsNotFound(err) {
-	// 	glog.Errorf("Node %q not found\n", nodeName)
-	// 	os.Exit(1)
-	// } else if statusError, isStatus := err.(*errors.StatusError); isStatus {
-	// 	glog.Errorf("Error getting node %q %v\n", nodeName, statusError.ErrStatus.Message)
-	// 	os.Exit(1)
-	// } else if err != nil {
-	// 	glog.Error(err.Error())
-	// 	os.Exit(1)
-	// } else {
-	// 	fmt.Printf("Found node:\n%v\n", nodeObj)
-	// }
 
+	// Add or update annotation on Node object
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		// Retrieve the latest version of Node before attempting update
-		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		// Retrieve the latest version of Node before attempting update, so that
+		// existing changes are not overwritten. RetryOnConflict uses
+		// exponential backoff to avoid exhausting the apiserver.
 		result, getErr := nodesClient.Get(nodeName, metav1.GetOptions{})
 		if getErr != nil {
 			glog.Error("Failed to get latest version of Node: %v", getErr)
 			os.Exit(1)
 		}
 
-		var previousLabelValue string
-		if result.ObjectMeta.Labels != nil {
-			previousLabelValue := result.ObjectMeta.Labels[labelKey]
-			glog.V(3).Infof("previousLabelValue=%q", previousLabelValue)
+		var previousAnnotationValue string
+		if result.ObjectMeta.Annotations != nil {
+			previousAnnotationValue =
+				result.ObjectMeta.Annotations[annotationKey]
+			glog.V(3).Infof(
+				"previousAnnotationValue=%q", previousAnnotationValue)
 		}
 
-		result.ObjectMeta.Labels = cloneAndAddLabel(
-			result.ObjectMeta.Labels, labelKey, previousLabelValue+"newValue")
+		existingDriverMap := map[string]string{}
+		if previousAnnotationValue != "" {
+			// Parse previousAnnotationValue as JSON
+			if err := json.Unmarshal([]byte(previousAnnotationValue), &existingDriverMap); err != nil {
+				glog.Errorf(
+					"Failed to parse node's %q annotation value (%q) err=%v",
+					annotationKey,
+					previousAnnotationValue,
+					nodeName,
+					err)
+				os.Exit(1)
+			}
+		}
+
+		if val, ok := existingDriverMap[driverName]; ok {
+			if val == csiDriverNodeId {
+				// Value already exists in node annotation, nothing more to do
+				glog.V(1).Infof(
+					"The key value {%q: %q} alredy eixst in node %q annotation: %v",
+					driverName,
+					csiDriverNodeId,
+					annotationKey,
+					previousAnnotationValue)
+				os.Exit(0)
+			}
+		}
+
+		// Add/update annotation value
+		existingDriverMap[driverName] = csiDriverNodeId
+		jsonObj, err := json.Marshal(existingDriverMap)
+		if err != nil {
+			glog.Errorf(
+				"Failed while trying to add key value {%q: %q} to node %q annotation. Existing value: %v",
+				driverName,
+				csiDriverNodeId,
+				annotationKey,
+				previousAnnotationValue)
+			os.Exit(1)
+		}
+
+		result.ObjectMeta.Annotations = cloneAndAddAnnotation(
+			result.ObjectMeta.Annotations,
+			annotationKey,
+			string(jsonObj))
 		_, updateErr := nodesClient.Update(result)
 		return updateErr
 	})
@@ -103,7 +184,6 @@ func main() {
 		panic(fmt.Errorf("Update failed: %v", retryErr))
 	}
 	fmt.Println("Updated node...")
-
 }
 
 func buildConfig(kubeconfig string) (*rest.Config, error) {
@@ -118,18 +198,20 @@ func buildConfig(kubeconfig string) (*rest.Config, error) {
 }
 
 // Clones the given map and returns a new map with the given key and value added.
-// Returns the given map, if labelKey is empty.
-func cloneAndAddLabel(
-	labels map[string]string, labelKey, labelValue string) map[string]string {
-	if labelKey == "" {
-		// Don't need to add a label.
-		return labels
+// Returns the given map, if annotationKey is empty.
+func cloneAndAddAnnotation(
+	annotations map[string]string,
+	annotationKey,
+	annotationValue string) map[string]string {
+	if annotationKey == "" {
+		// Don't need to add an annotation.
+		return annotations
 	}
 	// Clone.
-	newLabels := map[string]string{}
-	for key, value := range labels {
-		newLabels[key] = value
+	newAnnotations := map[string]string{}
+	for key, value := range annotations {
+		newAnnotations[key] = value
 	}
-	newLabels[labelKey] = labelValue
-	return newLabels
+	newAnnotations[annotationKey] = annotationValue
+	return newAnnotations
 }
