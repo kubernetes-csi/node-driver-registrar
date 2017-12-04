@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/retry"
@@ -41,6 +42,9 @@ const (
 
 	// Default timeout of short CSI calls like GetPluginInfo
 	csiTimeout = time.Second
+
+	// Verify (and update, if needed) the node ID at this freqeuency.
+	sleepDuration = 2 * time.Minute
 )
 
 // Command line flags
@@ -54,9 +58,9 @@ func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	// Fetch node name from environemnt annotation
-	nodeName := os.Getenv("KUBE_NODE_NAME")
-	if nodeName == "" {
+	// Fetch node name from environemnt variable
+	k8sNodeName := os.Getenv("KUBE_NODE_NAME")
+	if k8sNodeName == "" {
 		glog.Error(fmt.Errorf(
 			"Node name not found. The environment variable KUBE_NODE_NAME is empty."))
 		os.Exit(1)
@@ -78,12 +82,12 @@ func main() {
 	glog.V(1).Infof("Calling CSI driver to discover driver name.")
 	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
 	defer cancel()
-	driverName, err := csiConn.GetDriverName(ctx)
+	csiDriverName, err := csiConn.GetDriverName(ctx)
 	if err != nil {
 		glog.Error(err.Error())
 		os.Exit(1)
 	}
-	glog.V(2).Infof("CSI driver name: %q", driverName)
+	glog.V(2).Infof("CSI driver name: %q", csiDriverName)
 
 	// Get CSI Driver Node ID
 	glog.V(1).Infof("Calling CSI driver to discover node ID.")
@@ -112,17 +116,44 @@ func main() {
 	}
 
 	glog.V(1).Infof("Attempt to update node annotation if needed")
-	nodesClient := clientset.CoreV1().Nodes()
+	k8sNodesClient := clientset.CoreV1().Nodes()
 
+	// This program is intended to run as a side-car container inside a
+	// Kubernetes DaemonSet. Kubernetes DaemonSet only have one RestartPolicy,
+	// always, meaning as soon as this container terminates, it will be started
+	// again. Therefore, this program will loop indefientley and periodically
+	// update the node annotation.
+	// The CSI driver name and node ID are assumed to be immutable, and are not
+	// refetched on subsequent loop iterations.
+
+	for {
+		getVerifyAndUpdateNode(
+			k8sNodeName,
+			k8sNodesClient,
+			csiDriverName,
+			csiDriverNodeId)
+		time.Sleep(sleepDuration)
+	}
+}
+
+// Fetches Kubernetes node API object corresponding to k8sNodeName.
+// Returns false if the csiDriverName and csiDriverNodeId are already present in
+// the CSI node ID annotation.
+// Returns true and updates the CSI node ID annotation otherwise.
+func getVerifyAndUpdateNode(
+	k8sNodeName string,
+	k8sNodesClient corev1.NodeInterface,
+	csiDriverName string,
+	csiDriverNodeId string) error {
 	// Add or update annotation on Node object
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of Node before attempting update, so that
 		// existing changes are not overwritten. RetryOnConflict uses
 		// exponential backoff to avoid exhausting the apiserver.
-		result, getErr := nodesClient.Get(nodeName, metav1.GetOptions{})
+		result, getErr := k8sNodesClient.Get(k8sNodeName, metav1.GetOptions{})
 		if getErr != nil {
-			glog.Error("Failed to get latest version of Node: %v", getErr)
-			os.Exit(1)
+			glog.Errorf("Failed to get latest version of Node: %v", getErr)
+			return getErr // do not wrap error
 		}
 
 		var previousAnnotationValue string
@@ -137,53 +168,57 @@ func main() {
 		if previousAnnotationValue != "" {
 			// Parse previousAnnotationValue as JSON
 			if err := json.Unmarshal([]byte(previousAnnotationValue), &existingDriverMap); err != nil {
-				glog.Errorf(
+				return fmt.Errorf(
 					"Failed to parse node's %q annotation value (%q) err=%v",
 					annotationKey,
 					previousAnnotationValue,
-					nodeName,
 					err)
-				os.Exit(1)
 			}
 		}
 
-		if val, ok := existingDriverMap[driverName]; ok {
+		if val, ok := existingDriverMap[csiDriverName]; ok {
 			if val == csiDriverNodeId {
 				// Value already exists in node annotation, nothing more to do
 				glog.V(1).Infof(
-					"The key value {%q: %q} alredy eixst in node %q annotation: %v",
-					driverName,
+					"The key value {%q: %q} alredy eixst in node %q annotation, no need to update: %v",
+					csiDriverName,
 					csiDriverNodeId,
 					annotationKey,
 					previousAnnotationValue)
-				os.Exit(0)
+				return nil
 			}
 		}
 
 		// Add/update annotation value
-		existingDriverMap[driverName] = csiDriverNodeId
+		existingDriverMap[csiDriverName] = csiDriverNodeId
 		jsonObj, err := json.Marshal(existingDriverMap)
 		if err != nil {
-			glog.Errorf(
+			return fmt.Errorf(
 				"Failed while trying to add key value {%q: %q} to node %q annotation. Existing value: %v",
-				driverName,
+				csiDriverName,
 				csiDriverNodeId,
 				annotationKey,
 				previousAnnotationValue)
-			os.Exit(1)
 		}
 
 		result.ObjectMeta.Annotations = cloneAndAddAnnotation(
 			result.ObjectMeta.Annotations,
 			annotationKey,
 			string(jsonObj))
-		_, updateErr := nodesClient.Update(result)
-		return updateErr
+		_, updateErr := k8sNodesClient.Update(result)
+		if updateErr == nil {
+			fmt.Println(
+				"Updated node %q successfully for CSI driver %q and CSI node name %q",
+				k8sNodeName,
+				csiDriverName,
+				csiDriverNodeId)
+		}
+		return updateErr // do not wrap error
 	})
 	if retryErr != nil {
-		panic(fmt.Errorf("Update failed: %v", retryErr))
+		return fmt.Errorf("Node update failed: %v", retryErr)
 	}
-	fmt.Println("Updated node...")
+	return nil
 }
 
 func buildConfig(kubeconfig string) (*rest.Config, error) {
