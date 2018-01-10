@@ -27,13 +27,15 @@ endif
 all: driver-registrar
 
 driver-registrar:
-	go build -o driver-registrar cmd/driver-registrar/main.go
+	go install github.com/kubernetes-csi/driver-registrar/cmd/driver-registrar
+	mkdir -p bin
+	cp ${GOPATH}/bin/driver-registrar bin/driver-registrar
 
 clean:
-	-rm -rf driver-registrar deploy/docker/driver-registrar
+	-rm -rf bin deploy/docker/driver-registrar
 
 container: driver-registrar
-	cp driver-registrar deploy/docker
+	cp bin/driver-registrar deploy/docker
 	docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) deploy/docker
 
 push: container
