@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/kubernetes-csi/driver-registrar.svg?branch=master)](https://travis-ci.org/kubernetes-csi/driver-registrar)
 # Driver Registrar
 
 A sidecar container that

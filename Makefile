@@ -14,13 +14,13 @@
 
 .PHONY: all driver-registrar clean test
 
-IMAGE_NAME=docker.io/k8scsi/driver-registrar
+IMAGE_NAME=quay.io/k8scsi/driver-registrar
 IMAGE_VERSION=latest
 
 ifdef V
 TESTARGS = -v -args -alsologtostderr -v 5
 else
-TESTARGS = 
+TESTARGS =
 endif
 
 
