@@ -9,7 +9,7 @@ script:
   - make test
 after_success:
   - if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
-      sudo ./hack/build-container.sh
-      docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}";
-      docker push quay.io/k8scsi/driver-registrar
+      sudo ./hack/build-container.sh;
+      docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}";
+      docker push quay.io/k8scsi/driver-registrar:canary;
     fi
