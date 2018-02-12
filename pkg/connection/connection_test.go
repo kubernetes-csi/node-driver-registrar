@@ -63,13 +63,13 @@ func createMockServer(t *testing.T) (
 func TestGetNodeID(t *testing.T) {
 	tests := []struct {
 		name        string
-		output      *csi.GetNodeIDResponse
+		output      *csi.NodeGetIdResponse
 		injectError bool
 		expectError bool
 	}{
 		{
 			name: "success",
-			output: &csi.GetNodeIDResponse{
+			output: &csi.NodeGetIdResponse{
 				NodeId: "mock_node_id",
 			},
 			expectError: false,
@@ -82,7 +82,7 @@ func TestGetNodeID(t *testing.T) {
 		},
 		{
 			name: "empty ID",
-			output: &csi.GetNodeIDResponse{
+			output: &csi.NodeGetIdResponse{
 				NodeId: "",
 			},
 			expectError: true,
@@ -99,10 +99,10 @@ func TestGetNodeID(t *testing.T) {
 
 	for _, test := range tests {
 
-		in := &csi.GetNodeIDRequest{
+		in := &csi.NodeGetIdRequest{
 			Version: &csi.Version{
 				Major: 0,
-				Minor: 1,
+				Minor: 2,
 				Patch: 0,
 			},
 		}
@@ -114,9 +114,9 @@ func TestGetNodeID(t *testing.T) {
 		}
 
 		// Setup expectation
-		nodeServer.EXPECT().GetNodeID(gomock.Any(), in).Return(out, injectedErr).Times(1)
+		nodeServer.EXPECT().NodeGetId(gomock.Any(), in).Return(out, injectedErr).Times(1)
 
-		nodeID, err := csiConn.GetNodeID(context.Background())
+		nodeID, err := csiConn.NodeGetId(context.Background())
 		if test.expectError && err == nil {
 			t.Errorf("test %q: Expected error, got none", test.name)
 		}
@@ -140,7 +140,7 @@ func TestGetPluginInfo(t *testing.T) {
 			name: "success",
 			output: &csi.GetPluginInfoResponse{
 				Name:          "csi/example",
-				VendorVersion: "0.1.0",
+				VendorVersion: "0.2.0",
 				Manifest: map[string]string{
 					"hello": "world",
 				},
@@ -175,7 +175,7 @@ func TestGetPluginInfo(t *testing.T) {
 		in := &csi.GetPluginInfoRequest{
 			Version: &csi.Version{
 				Major: 0,
-				Minor: 1,
+				Minor: 2,
 				Patch: 0,
 			},
 		}

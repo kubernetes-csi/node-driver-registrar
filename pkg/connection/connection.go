@@ -38,8 +38,8 @@ type CSIConnection interface {
 	// call.
 	GetDriverName(ctx context.Context) (string, error)
 
-	// GetNodeID returns node ID of the current according to the CSI driver.
-	GetNodeID(ctx context.Context) (string, error)
+	// NodeGetId returns node ID of the current according to the CSI driver.
+	NodeGetId(ctx context.Context) (string, error)
 
 	// Close the connection
 	Close() error
@@ -55,7 +55,7 @@ var (
 	// Version of CSI this client implements
 	csiVersion = csi.Version{
 		Major: 0,
-		Minor: 1,
+		Minor: 2,
 		Patch: 0,
 	}
 )
@@ -121,14 +121,14 @@ func (c *csiConnection) GetDriverName(ctx context.Context) (string, error) {
 	return name, nil
 }
 
-func (c *csiConnection) GetNodeID(ctx context.Context) (string, error) {
+func (c *csiConnection) NodeGetId(ctx context.Context) (string, error) {
 	client := csi.NewNodeClient(c.conn)
 
-	req := csi.GetNodeIDRequest{
+	req := csi.NodeGetIdRequest{
 		Version: &csiVersion,
 	}
 
-	rsp, err := client.GetNodeID(ctx, &req)
+	rsp, err := client.NodeGetId(ctx, &req)
 	if err != nil {
 		return "", err
 	}

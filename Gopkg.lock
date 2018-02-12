@@ -142,8 +142,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/kubernetes-csi/csi-test"
-  packages = ["driver"]
-  revision = "e2257d2d22b2a89cf84a3706a79c4b98a4eb2c1b"
+  packages = ["driver","utils"]
+  revision = "e56fa7f7a0416476964a01323ad041b9324d3d8c"
 
 [[projects]]
   branch = "master"
@@ -201,9 +201,9 @@
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
-  revision = "5a9f7b402fe85096d2e1d0383435ee1876e863d0"
-  version = "v1.8.0"
+  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
+  revision = "6b51017f791ae1cfbec89c52efdf444b13b550ef"
+  version = "v1.9.2"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -244,6 +244,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fa4312b079bdc986693327973acf4ad3f183ad5d47887b89b4bcac418db18113"
+  inputs-digest = "154f8b1ba104f1f1cd6b3f194164d530b1ab9ab79a547c109e9f3c79ffc60423"
   solver-name = "gps-cdcl"
   solver-version = 1
