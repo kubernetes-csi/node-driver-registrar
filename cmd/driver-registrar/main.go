@@ -94,7 +94,7 @@ func main() {
 	glog.V(1).Infof("Calling CSI driver to discover node ID.")
 	ctx, cancel = context.WithTimeout(context.Background(), csiTimeout)
 	defer cancel()
-	csiDriverNodeId, err := csiConn.GetNodeID(ctx)
+	csiDriverNodeId, err := csiConn.NodeGetId(ctx)
 	if err != nil {
 		glog.Error(err.Error())
 		os.Exit(1)

@@ -19,6 +19,13 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/container-storage-interface/spec"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/kubernetes-csi/csi-test"
 
 [[constraint]]
   branch = "master"
