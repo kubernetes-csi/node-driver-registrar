@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/container-storage-interface/spec/lib/go/csi/v0"
 	"github.com/golang/mock/gomock"
 	"github.com/kubernetes-csi/csi-test/driver"
 )
@@ -99,13 +99,7 @@ func TestGetNodeID(t *testing.T) {
 
 	for _, test := range tests {
 
-		in := &csi.NodeGetIdRequest{
-			Version: &csi.Version{
-				Major: 0,
-				Minor: 2,
-				Patch: 0,
-			},
-		}
+		in := &csi.NodeGetIdRequest{}
 
 		out := test.output
 		var injectedErr error = nil
@@ -172,13 +166,7 @@ func TestGetPluginInfo(t *testing.T) {
 
 	for _, test := range tests {
 
-		in := &csi.GetPluginInfoRequest{
-			Version: &csi.Version{
-				Major: 0,
-				Minor: 2,
-				Patch: 0,
-			},
-		}
+		in := &csi.GetPluginInfoRequest{}
 
 		out := test.output
 		var injectedErr error = nil

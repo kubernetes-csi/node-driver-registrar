@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/container-storage-interface/spec/lib/go/csi/v0"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -51,13 +51,6 @@ type csiConnection struct {
 
 var (
 	_ CSIConnection = &csiConnection{}
-
-	// Version of CSI this client implements
-	csiVersion = csi.Version{
-		Major: 0,
-		Minor: 2,
-		Patch: 0,
-	}
 )
 
 func NewConnection(
@@ -106,9 +99,7 @@ func connect(address string, timeout time.Duration) (*grpc.ClientConn, error) {
 func (c *csiConnection) GetDriverName(ctx context.Context) (string, error) {
 	client := csi.NewIdentityClient(c.conn)
 
-	req := csi.GetPluginInfoRequest{
-		Version: &csiVersion,
-	}
+	req := csi.GetPluginInfoRequest{}
 
 	rsp, err := client.GetPluginInfo(ctx, &req)
 	if err != nil {
@@ -124,9 +115,7 @@ func (c *csiConnection) GetDriverName(ctx context.Context) (string, error) {
 func (c *csiConnection) NodeGetId(ctx context.Context) (string, error) {
 	client := csi.NewNodeClient(c.conn)
 
-	req := csi.NodeGetIdRequest{
-		Version: &csiVersion,
-	}
+	req := csi.NodeGetIdRequest{}
 
 	rsp, err := client.NodeGetId(ctx, &req)
 	if err != nil {

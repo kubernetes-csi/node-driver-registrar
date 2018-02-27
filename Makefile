@@ -15,7 +15,7 @@
 .PHONY: all driver-registrar clean test
 
 IMAGE_NAME=quay.io/k8scsi/driver-registrar
-IMAGE_VERSION=0.2.0
+IMAGE_VERSION=v0.2.0
 
 ifdef V
 TESTARGS = -v -args -alsologtostderr -v 5
@@ -27,12 +27,11 @@ endif
 all: driver-registrar
 
 driver-registrar:
-	go install github.com/kubernetes-csi/driver-registrar/cmd/driver-registrar
 	mkdir -p bin
-	cp ${GOPATH}/bin/driver-registrar bin/driver-registrar
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar 
 
 clean:
-	-rm -rf bin deploy/docker/driver-registrar
+	rm -rf bin deploy/docker/driver-registrar
 
 container: driver-registrar
 	cp bin/driver-registrar deploy/docker
