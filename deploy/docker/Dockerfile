@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM fedora:26
+FROM alpine 
 
 COPY driver-registrar /driver-registrar
 ENTRYPOINT ["/driver-registrar"]

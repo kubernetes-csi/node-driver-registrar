@@ -14,10 +14,10 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
-  branch = "master"
   name = "github.com/container-storage-interface/spec"
-  packages = ["lib/go/csi"]
-  revision = "9e88e4bfabeca1b8e4810555815f112159292ada"
+  packages = ["lib/go/csi/v0"]
+  revision = "35d9f9d77954980e449e52c3f3e43c21bd8171f5"
+  version = "v0.2.0-rc1"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -143,7 +143,7 @@
   branch = "master"
   name = "github.com/kubernetes-csi/csi-test"
   packages = ["driver","utils"]
-  revision = "e56fa7f7a0416476964a01323ad041b9324d3d8c"
+  revision = "9aed34bd6fe031caae3d055b19d041c2c64420cc"
 
 [[projects]]
   branch = "master"
@@ -244,6 +244,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "154f8b1ba104f1f1cd6b3f194164d530b1ab9ab79a547c109e9f3c79ffc60423"
+  inputs-digest = "b668125e067b5e7fb90140e3ffce592ce374c9c9c82dcbb973c24061682b74e6"
   solver-name = "gps-cdcl"
   solver-version = 1
