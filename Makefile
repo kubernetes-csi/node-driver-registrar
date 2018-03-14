@@ -15,7 +15,7 @@
 .PHONY: all driver-registrar clean test
 
 IMAGE_NAME=quay.io/k8scsi/driver-registrar
-IMAGE_VERSION=v0.2.0
+IMAGE_VERSION=canary
 
 ifdef V
 TESTARGS = -v -args -alsologtostderr -v 5
@@ -28,7 +28,7 @@ all: driver-registrar
 
 driver-registrar:
 	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar 
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar
 
 clean:
 	rm -rf bin deploy/docker/driver-registrar
