@@ -53,11 +53,20 @@ var (
 	kubeconfig        = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
 	connectionTimeout = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
 	csiAddress        = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
+	showVersion       = flag.Bool("version", false, "Show version.")
+
+	version = "unknown"
 )
 
 func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(os.Args[0], version)
+		return
+	}
+	glog.Infof("Version: %s", version)
 
 	// Fetch node name from environemnt variable
 	k8sNodeName := os.Getenv("KUBE_NODE_NAME")

@@ -17,6 +17,8 @@
 IMAGE_NAME=quay.io/k8scsi/driver-registrar
 IMAGE_VERSION=canary
 
+REV=$(shell git describe --long --match='v*' --dirty)
+
 ifdef V
 TESTARGS = -v -args -alsologtostderr -v 5
 else
@@ -28,7 +30,7 @@ all: driver-registrar
 
 driver-registrar:
 	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-X main.version=$(REV) -extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar
 
 clean:
 	rm -rf bin deploy/docker/driver-registrar
