@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/container-storage-interface/spec"
   packages = ["lib/go/csi/v0"]
-  revision = "35d9f9d77954980e449e52c3f3e43c21bd8171f5"
-  version = "v0.2.0"
+  revision = "2178fdeea87f1150a17a63252eee28d4d8141f72"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -42,10 +42,11 @@
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
-    "ptypes/timestamp"
+    "ptypes/timestamp",
+    "ptypes/wrappers"
   ]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -109,7 +110,7 @@
     "driver",
     "utils"
   ]
-  revision = "3e4586c0abfbc869329d01510c663c6c540efb77"
+  revision = "b17d456bc0eaad4c7bf233ded7cf0db4ea13c725"
 
 [[projects]]
   name = "github.com/modern-go/concurrent"
@@ -375,6 +376,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "15639ba9cb968b8555625e027d507589f9043db30350c8dd60188800c5ac0d0c"
+  inputs-digest = "23b534fcac23ccd1dd6c09b2cdd9a2903776af133e72767154eeb00ce5f45577"
   solver-name = "gps-cdcl"
   solver-version = 1
