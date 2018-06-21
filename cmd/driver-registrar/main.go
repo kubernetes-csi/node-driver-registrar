@@ -21,17 +21,22 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"time"
 
+	"google.golang.org/grpc"
+
 	"github.com/golang/glog"
+	"golang.org/x/sys/unix"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/retry"
+	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
 	"github.com/kubernetes-csi/driver-registrar/pkg/connection"
 )
@@ -50,13 +55,59 @@ const (
 
 // Command line flags
 var (
-	kubeconfig        = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
-	connectionTimeout = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
-	csiAddress        = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
-	showVersion       = flag.Bool("version", false, "Show version.")
-
-	version = "unknown"
+	kubeconfig              = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
+	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
+	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
+	kubeletRegistrationPath = flag.String("kubelet-registration-path", "/var/lib/kubelet/plugins/csi-hostpath/csi.sock",
+		`Enables Kubelet Plugin Registration service, and returns the specified path as "endpoint" in "PluginInfo" response.
+		 If this option is set, the driver-registrar expose a unix domain socket to handle Kubelet Plugin Registration, 
+		 this socket MUST be surfaced on the host in the kubelet plugin registration directory (in addition to the CSI driver socket). 
+		 If plugin registration is enabled on kubelet (kubelet flag KubeletPluginsWatcher is set), then this option should be set
+		 and the value should be the path of the CSI driver socket on the host machine.`)
+	showVersion = flag.Bool("version", false, "Show version.")
+	version     = "unknown"
+	// List of supported versions
+	supportedVersions = []string{"0.2.0", "0.3.0"}
 )
+
+// registrationServer is a sample plugin to work with plugin watcher
+type registrationServer struct {
+	driverName string
+	endpoint   string
+	version    []string
+}
+
+var _ registerapi.RegistrationServer = registrationServer{}
+
+// NewregistrationServer returns an initialized registrationServer instance
+func newRegistrationServer(driverName string, endpoint string, versions []string) registerapi.RegistrationServer {
+	return &registrationServer{
+		driverName: driverName,
+		endpoint:   endpoint,
+		version:    versions,
+	}
+}
+
+// GetInfo is the RPC invoked by plugin watcher
+func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
+	glog.Infof("Received GetInfo call: %+v", req)
+	return &registerapi.PluginInfo{
+		Type:              registerapi.CSIPlugin,
+		Name:              e.driverName,
+		Endpoint:          e.endpoint,
+		SupportedVersions: e.version,
+	}, nil
+}
+
+func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status *registerapi.RegistrationStatus) (*registerapi.RegistrationStatusResponse, error) {
+	glog.Infof("Received NotifyRegistrationStatus call: %+v", status)
+	if !status.PluginRegistered {
+		glog.Errorf("Registration process failed with error: %+v, restarting registration container.", status.Error)
+		os.Exit(1)
+	}
+
+	return &registerapi.RegistrationStatusResponse{}, nil
+}
 
 func main() {
 	flag.Set("logtostderr", "true")
@@ -110,6 +161,47 @@ func main() {
 	}
 	glog.V(2).Infof("CSI driver node ID: %q", csiDriverNodeId)
 
+	// When kubeletRegistrationPath is specified then driver-registrar ONLY acts
+	// as gRPC server which replies to registration requests initiated by kubelet's
+	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
+	if *kubeletRegistrationPath != "" {
+		registrar := newRegistrationServer(csiDriverName, *kubeletRegistrationPath, supportedVersions)
+		socketPath := fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
+		fi, err := os.Stat(socketPath)
+		if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
+			// Remove any socket, stale or not, but fall through for other files
+			if err := os.Remove(socketPath); err != nil {
+				glog.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
+				os.Exit(1)
+			}
+		}
+		if err != nil && !os.IsNotExist(err) {
+			glog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
+			os.Exit(1)
+		}
+		// Default to only user accessible socket, caller can open up later if desired
+		oldmask := unix.Umask(0077)
+
+		glog.Infof("Starting Registration Server at: %s\n", socketPath)
+		lis, err := net.Listen("unix", socketPath)
+		if err != nil {
+			glog.Errorf("failed to listen on socket: %s with error: %+v", socketPath, err)
+			os.Exit(1)
+		}
+		unix.Umask(oldmask)
+		glog.Infof("Registration Server started at: %s\n", socketPath)
+		grpcServer := grpc.NewServer()
+		// Registers kubelet plugin watcher api.
+		registerapi.RegisterRegistrationServer(grpcServer, registrar)
+
+		// Starts service
+		if err := grpcServer.Serve(lis); err != nil {
+			glog.Errorf("Registration Server stopped serving: %v", err)
+			os.Exit(1)
+		}
+		// If gRPC server is gracefully shutdown, exit
+		os.Exit(0)
+	}
 	// Create the client config. Use kubeconfig if given, otherwise assume
 	// in-cluster.
 	glog.V(1).Infof("Loading kubeconfig.")
