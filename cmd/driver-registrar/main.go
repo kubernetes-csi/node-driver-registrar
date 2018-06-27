@@ -132,7 +132,7 @@ func main() {
 	// can skip adding mappting to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	// Connect to CSI.
-	glog.V(1).Infof("Attempting to open a gRPC connection with: %q", csiAddress)
+	glog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
 	csiConn, err := connection.NewConnection(*csiAddress, *connectionTimeout)
 	if err != nil {
 		glog.Error(err.Error())
