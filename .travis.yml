@@ -3,7 +3,7 @@ language: go
 services:
   - docker
 go:
-  - 1.x
+  - 1.10.3
 script:
   - go fmt $(go list ./... | grep -v vendor) | wc -l | grep 0
   - make test
