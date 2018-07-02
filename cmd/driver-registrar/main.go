@@ -58,7 +58,7 @@ var (
 	kubeconfig              = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
 	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
-	kubeletRegistrationPath = flag.String("kubelet-registration-path", "/var/lib/kubelet/plugins/csi-hostpath/csi.sock",
+	kubeletRegistrationPath = flag.String("kubelet-registration-path", "",
 		`Enables Kubelet Plugin Registration service, and returns the specified path as "endpoint" in "PluginInfo" response.
 		 If this option is set, the driver-registrar expose a unix domain socket to handle Kubelet Plugin Registration, 
 		 this socket MUST be surfaced on the host in the kubelet plugin registration directory (in addition to the CSI driver socket). 
