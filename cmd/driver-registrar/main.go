@@ -119,7 +119,7 @@ func main() {
 	}
 	glog.Infof("Version: %s", version)
 
-	// Fetch node name from environemnt variable
+	// Fetch node name from environment variable
 	k8sNodeName := os.Getenv("KUBE_NODE_NAME")
 	if k8sNodeName == "" {
 		glog.Error(fmt.Errorf(
