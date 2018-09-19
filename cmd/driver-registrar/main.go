@@ -122,8 +122,7 @@ func main() {
 	// Fetch node name from environemnt variable
 	k8sNodeName := os.Getenv("KUBE_NODE_NAME")
 	if k8sNodeName == "" {
-		glog.Error(fmt.Errorf(
-			"Node name not found. The environment variable KUBE_NODE_NAME is empty."))
+		glog.Error("Node name not found. The environment variable KUBE_NODE_NAME is empty.")
 		os.Exit(1)
 	}
 
