@@ -26,10 +26,6 @@ import (
 	"github.com/kubernetes-csi/csi-test/driver"
 )
 
-const (
-	driverName = "foo/bar"
-)
-
 func createMockServer(t *testing.T) (
 	*gomock.Controller,
 	*driver.MockCSIDriver,
@@ -102,7 +98,7 @@ func TestGetNodeID(t *testing.T) {
 		in := &csi.NodeGetIdRequest{}
 
 		out := test.output
-		var injectedErr error = nil
+		var injectedErr error
 		if test.injectError {
 			injectedErr = fmt.Errorf("mock error")
 		}
@@ -169,7 +165,7 @@ func TestGetPluginInfo(t *testing.T) {
 		in := &csi.GetPluginInfoRequest{}
 
 		out := test.output
-		var injectedErr error = nil
+		var injectedErr error
 		if test.injectError {
 			injectedErr = fmt.Errorf("mock error")
 		}
