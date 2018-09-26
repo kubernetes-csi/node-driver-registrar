@@ -57,17 +57,23 @@ var (
 		"Kubernetes. In this mode this program will setup all the necessary information "+
 		"to register the CSI driver with Kubernetes. This mode requires that this "+
 		"container be run in a StateFul set of 1, and not in a DaemonSet.")
-	k8sAttachmentRequired = flag.Bool("kubernetes-register-attachment-required",
-		false,
+	k8sAttachmentRequired = flag.Bool("driver-requires-attachment",
+		true,
 		"Indicates this CSI volume driver requires an attach operation (because it "+
 			"implements the CSI ControllerPublishVolume() method), and that Kubernetes "+
 			"should call attach and wait for any attach operation to complete before "+
 			"proceeding to mounting. If value is not specified, default is false meaning "+
 			"attach will not be called.")
-	k8sPodInfoOnMountVersion = flag.String("kubernetes-register-pod-info-on-mount-version",
+	k8sPodInfoOnMountVersion = flag.String("pod-info-mount-version",
 		"",
-		"Set the value to `v1` to enable. "+
-			"See https://github.com/kubernetes/csi-api/blob/5cb3ab0b202d46bbed406ea2c49b44440d2c8f94/pkg/apis/csi/v1alpha1/types.go#L68")
+		"This indicates that the associated CSI volume driver"+
+			"requires additional pod information (like podName, podUID, etc.) during mount."+
+			"A version of value \"v1\" will cause the Kubelet send the followings pod information "+
+			"during NodePublishVolume() calls to the driver as VolumeAttributes:"+
+			"- csi.storage.k8s.io/pod.name: pod.Name\n"+
+			"- csi.storage.k8s.io/pod.namespace: pod.Namespace\n"+
+			"- csi.storage.k8s.io/pod.uid: string(pod.UID)",
+	)
 	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "",
