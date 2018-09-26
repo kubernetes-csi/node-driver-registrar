@@ -102,42 +102,43 @@ func nodeRegister(
 		}
 		// If gRPC server is gracefully shutdown, exit
 		os.Exit(0)
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		glog.Error(err.Error())
-		os.Exit(1)
-	}
+	} else { // only apply Node label update when kubelet plugin not used
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			glog.Error(err.Error())
+			os.Exit(1)
+		}
 
-	glog.V(1).Infof("Attempt to update node annotation if needed")
-	k8sNodesClient := clientset.CoreV1().Nodes()
+		glog.V(1).Infof("Attempt to update node annotation if needed")
+		k8sNodesClient := clientset.CoreV1().Nodes()
 
-	// Set up goroutine to cleanup (aka deregister) on termination.
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		<-c
-		getVerifyAndDeleteNodeId(
-			k8sNodeName,
-			k8sNodesClient,
-			csiDriverName)
-		os.Exit(1)
-	}()
+		// Set up goroutine to cleanup (aka deregister) on termination.
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			<-c
+			getVerifyAndDeleteNodeId(
+				k8sNodeName,
+				k8sNodesClient,
+				csiDriverName)
+			os.Exit(1)
+		}()
 
-	// This program is intended to run as a side-car container inside a
-	// Kubernetes DaemonSet. Kubernetes DaemonSet only have one RestartPolicy,
-	// always, meaning as soon as this container terminates, it will be started
-	// again. Therefore, this program will loop indefientley and periodically
-	// update the node annotation.
-	// The CSI driver name and node ID are assumed to be immutable, and are not
-	// refetched on subsequent loop iterations.
-	for {
-		getVerifyAndAddNodeId(
-			k8sNodeName,
-			k8sNodesClient,
-			csiDriverName,
-			csiDriverNodeId)
-		time.Sleep(sleepDuration)
+		// This program is intended to run as a side-car container inside a
+		// Kubernetes DaemonSet. Kubernetes DaemonSet only have one RestartPolicy,
+		// always, meaning as soon as this container terminates, it will be started
+		// again. Therefore, this program will loop indefientley and periodically
+		// update the node annotation.
+		// The CSI driver name and node ID are assumed to be immutable, and are not
+		// refetched on subsequent loop iterations.
+		for {
+			getVerifyAndAddNodeId(
+				k8sNodeName,
+				k8sNodesClient,
+				csiDriverName,
+				csiDriverNodeId)
+			time.Sleep(sleepDuration)
+		}
 	}
 }
 
