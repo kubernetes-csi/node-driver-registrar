@@ -117,10 +117,13 @@ func nodeRegister(
 		signal.Notify(c, os.Interrupt)
 		go func() {
 			<-c
-			getVerifyAndDeleteNodeId(
+			err := getVerifyAndDeleteNodeId(
 				k8sNodeName,
 				k8sNodesClient,
 				csiDriverName)
+			if err != nil {
+				glog.Warning(err)
+			}
 			os.Exit(1)
 		}()
 
@@ -132,11 +135,14 @@ func nodeRegister(
 		// The CSI driver name and node ID are assumed to be immutable, and are not
 		// refetched on subsequent loop iterations.
 		for {
-			getVerifyAndAddNodeId(
+			err := getVerifyAndAddNodeId(
 				k8sNodeName,
 				k8sNodesClient,
 				csiDriverName,
 				csiDriverNodeId)
+			if err != nil {
+				glog.Warning(err)
+			}
 			time.Sleep(sleepDuration)
 		}
 	}
