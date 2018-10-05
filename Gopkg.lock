@@ -375,7 +375,6 @@
   revision = "d65f4428c04f2d28f924a47d1d2177d0cbf45a16"
 
 [[projects]]
-  branch = "release-1.12"
   digest = "1:7aa037a4df5432be2820d164f378d7c22335e5cbba124e90e42114757ebd11ac"
   name = "k8s.io/apimachinery"
   packages = [
@@ -418,9 +417,10 @@
   ]
   pruneopts = ""
   revision = "6dd46049f39503a1fc8d65de4bd566829e95faff"
+  version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:f750eea76a41b0d4fcf8ba4a8df3bd3158b96c6179991408ae596433f772f297"
+  digest = "1:5d4153d12c3aed2c90a94262520d2498d5afa4d692554af55e65a7c5af0bc399"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -480,12 +480,11 @@
     "util/retry",
   ]
   pruneopts = ""
-  revision = "f95740e171023a8be8649df0e40ece69cd095bd8"
-  version = "kubernetes-1.12.0-rc.2"
+  revision = "1638f8970cefaa404ff3a62950f88b08292b2696"
+  version = "kubernetes-1.12.0"
 
 [[projects]]
-  branch = "release-1.12"
-  digest = "1:0b90e0e4c36bb8ea5e69a3c3cde149b5afd21eddcf95e020cd3febf79312f11c"
+  digest = "1:6b29915b728f47c182c1992c15c508e4ac9945c0f3457b1173b813708638e571"
   name = "k8s.io/csi-api"
   packages = [
     "pkg/apis/csi/v1alpha1",
@@ -495,7 +494,8 @@
     "pkg/crd",
   ]
   pruneopts = ""
-  revision = "833a598b67614ffea5b04ec1fc5bc3e5f6883e56"
+  revision = "daa9d551756f72a51f887db9485ec2b2575f47e4"
+  version = "kubernetes-1.12.0"
 
 [[projects]]
   digest = "1:d9c0b011a765fe7853b7c7fcd3aa2394ca4ff17f3f771e8f647e5fd95321e6ba"
