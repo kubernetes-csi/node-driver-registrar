@@ -35,11 +35,10 @@ driver-registrar:
 	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-X main.version=$(REV) -extldflags "-static"' -o ./bin/driver-registrar ./cmd/driver-registrar
 
 clean:
-	rm -rf bin deploy/docker/driver-registrar
+	rm -rf bin
 
 container: driver-registrar
-	cp bin/driver-registrar deploy/docker
-	docker build -t $(IMAGE_TAG) deploy/docker
+	docker build -t $(IMAGE_TAG) .
 
 push: container
 	docker push $(IMAGE_TAG)
