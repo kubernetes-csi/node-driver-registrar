@@ -36,7 +36,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
-	"github.com/kubernetes-csi/driver-registrar/pkg/connection"
+	"github.com/kubernetes-csi/node-driver-registrar/pkg/connection"
 )
 
 func nodeRegister(
