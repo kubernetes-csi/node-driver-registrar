@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/container-storage-interface/spec/lib/go/csi/v0"
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -115,9 +115,9 @@ func (c *csiConnection) GetDriverName(ctx context.Context) (string, error) {
 func (c *csiConnection) NodeGetId(ctx context.Context) (string, error) {
 	client := csi.NewNodeClient(c.conn)
 
-	req := csi.NodeGetIdRequest{}
+	req := csi.NodeGetInfoRequest{}
 
-	rsp, err := client.NodeGetId(ctx, &req)
+	rsp, err := client.NodeGetInfo(ctx, &req)
 	if err != nil {
 		return "", err
 	}

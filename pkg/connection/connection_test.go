@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/container-storage-interface/spec/lib/go/csi/v0"
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/mock/gomock"
 	"github.com/kubernetes-csi/csi-test/driver"
 )
@@ -59,13 +59,13 @@ func createMockServer(t *testing.T) (
 func TestGetNodeID(t *testing.T) {
 	tests := []struct {
 		name        string
-		output      *csi.NodeGetIdResponse
+		output      *csi.NodeGetInfoResponse
 		injectError bool
 		expectError bool
 	}{
 		{
 			name: "success",
-			output: &csi.NodeGetIdResponse{
+			output: &csi.NodeGetInfoResponse{
 				NodeId: "mock_node_id",
 			},
 			expectError: false,
@@ -78,7 +78,7 @@ func TestGetNodeID(t *testing.T) {
 		},
 		{
 			name: "empty ID",
-			output: &csi.NodeGetIdResponse{
+			output: &csi.NodeGetInfoResponse{
 				NodeId: "",
 			},
 			expectError: true,
@@ -95,7 +95,7 @@ func TestGetNodeID(t *testing.T) {
 
 	for _, test := range tests {
 
-		in := &csi.NodeGetIdRequest{}
+		in := &csi.NodeGetInfoRequest{}
 
 		out := test.output
 		var injectedErr error
@@ -104,7 +104,7 @@ func TestGetNodeID(t *testing.T) {
 		}
 
 		// Setup expectation
-		nodeServer.EXPECT().NodeGetId(gomock.Any(), in).Return(out, injectedErr).Times(1)
+		nodeServer.EXPECT().NodeGetInfo(gomock.Any(), in).Return(out, injectedErr).Times(1)
 
 		nodeID, err := csiConn.NodeGetId(context.Background())
 		if test.expectError && err == nil {
