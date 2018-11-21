@@ -85,7 +85,7 @@ var (
 	showVersion = flag.Bool("version", false, "Show version.")
 	version     = "unknown"
 	// List of supported versions
-	supportedVersions = []string{"0.2.0", "0.3.0"}
+	supportedVersions = []string{"1.0.0"}
 )
 
 // registrationServer is a sample plugin to work with plugin watcher
