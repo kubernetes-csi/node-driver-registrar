@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
-	"github.com/kubernetes-csi/driver-registrar/pkg/connection"
+	"github.com/kubernetes-csi/node-driver-registrar/pkg/connection"
 )
 
 const (
@@ -41,49 +41,22 @@ const (
 
 	// Verify (and update, if needed) the node ID at this freqeuency.
 	sleepDuration = 2 * time.Minute
-
-	modeNodeRegister = "node-register"
-	modeKubeRegister = "kubernetes-register"
-	defaultMode      = modeNodeRegister
 )
 
 // Command line flags
 var (
-	kubeconfig = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
-	runMode    = flag.String("mode", defaultMode, "Mode to run the program. Supported modes: node-register, kubernetes-register.\n"+
-		"In "+modeNodeRegister+" mode, the program will register the CSI driver with the "+
-		"node, setting up the node information accordingly.\n"+
-		"In "+modeKubeRegister+" mode, the program will register the driver with "+
-		"Kubernetes. In this mode this program will setup all the necessary information "+
-		"to register the CSI driver with Kubernetes. This mode requires that this "+
-		"container be run in a StateFul set of 1, and not in a DaemonSet.")
-	k8sAttachmentRequired = flag.Bool("driver-requires-attachment",
-		true,
-		"Indicates this CSI volume driver requires an attach operation (because it "+
-			"implements the CSI ControllerPublishVolume() method), and that Kubernetes "+
-			"should call attach and wait for any attach operation to complete before "+
-			"proceeding to mounting. If value is not specified, default is false meaning "+
-			"attach will not be called.")
-	k8sPodInfoOnMountVersion = flag.String("pod-info-mount-version",
-		"",
-		"This indicates that the associated CSI volume driver"+
-			"requires additional pod information (like podName, podUID, etc.) during mount."+
-			"A version of value \"v1\" will cause the Kubelet send the followings pod information "+
-			"during NodePublishVolume() calls to the driver as VolumeAttributes:"+
-			"- csi.storage.k8s.io/pod.name: pod.Name\n"+
-			"- csi.storage.k8s.io/pod.namespace: pod.Namespace\n"+
-			"- csi.storage.k8s.io/pod.uid: string(pod.UID)",
-	)
+	kubeconfig              = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
 	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "",
 		`Enables Kubelet Plugin Registration service, and returns the specified path as "endpoint" in "PluginInfo" response.
-		 If this option is set, the driver-registrar expose a unix domain socket to handle Kubelet Plugin Registration, 
-		 this socket MUST be surfaced on the host in the kubelet plugin registration directory (in addition to the CSI driver socket). 
-		 If plugin registration is enabled on kubelet (kubelet flag KubeletPluginsWatcher is set), then this option should be set
-		 and the value should be the path of the CSI driver socket on the host machine.`)
+If this option is set, the driver-registrar expose a unix domain socket to handle Kubelet Plugin Registration,
+this socket MUST be surfaced on the host in the kubelet plugin registration directory (in addition to the CSI driver socket).
+If plugin registration is enabled on kubelet (kubelet flag KubeletPluginsWatcher is set), then this option should be set
+and the value should be the path of the CSI driver socket on the host machine.`)
 	showVersion = flag.Bool("version", false, "Show version.")
 	version     = "unknown"
+
 	// List of supported versions
 	supportedVersions = []string{"1.0.0"}
 )
@@ -139,7 +112,7 @@ func main() {
 
 	// Once https://github.com/container-storage-interface/spec/issues/159 is
 	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
-	// can skip adding mappting to "csi.volume.kubernetes.io/nodeid" annotation.
+	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	// Connect to CSI.
 	glog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
@@ -169,16 +142,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Check mode
-	switch *runMode {
-	case modeNodeRegister:
-		nodeRegister(config, csiConn, csiDriverName)
-	case modeKubeRegister:
-		kubernetesRegister(config, csiConn, csiDriverName)
-	default:
-		glog.Errorf("Unknown mode: %s", *runMode)
-		fmt.Fprintf(os.Stderr, "Unknown mode: %s", *runMode)
-	}
+	// Run forever
+	nodeRegister(config, csiConn, csiDriverName)
 }
 
 func buildConfig(kubeconfig string) (*rest.Config, error) {
