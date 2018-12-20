@@ -24,8 +24,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/connection"
@@ -45,7 +43,6 @@ const (
 
 // Command line flags
 var (
-	kubeconfig              = flag.String("kubeconfig", "", "Absolute path to the kubeconfig file. Required only when running out of cluster.")
 	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "",
@@ -104,6 +101,11 @@ func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
+	if *kubeletRegistrationPath == "" {
+		glog.Error("kubelet-registration-path is a required parameter")
+		os.Exit(1)
+	}
+
 	if *showVersion {
 		fmt.Println(os.Args[0], version)
 		return
@@ -133,26 +135,6 @@ func main() {
 	}
 	glog.V(2).Infof("CSI driver name: %q", csiDriverName)
 
-	// Create the client config. Use kubeconfig if given, otherwise assume
-	// in-cluster.
-	glog.V(1).Infof("Loading kubeconfig.")
-	config, err := buildConfig(*kubeconfig)
-	if err != nil {
-		glog.Error(err.Error())
-		os.Exit(1)
-	}
-
 	// Run forever
-	nodeRegister(config, csiConn, csiDriverName)
-}
-
-func buildConfig(kubeconfig string) (*rest.Config, error) {
-	if kubeconfig != "" {
-		return clientcmd.BuildConfigFromFlags("", kubeconfig)
-	}
-
-	// Return config object which uses the service account kubernetes gives to
-	// pods. It's intended for clients that are running inside a pod running on
-	// kubernetes.
-	return rest.InClusterConfig()
+	nodeRegister(csiConn, csiDriverName)
 }
