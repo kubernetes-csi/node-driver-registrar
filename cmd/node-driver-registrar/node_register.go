@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"os"
@@ -27,32 +26,11 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/sys/unix"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
-
-	"github.com/kubernetes-csi/node-driver-registrar/pkg/connection"
 )
 
 func nodeRegister(
-	csiConn connection.CSIConnection,
 	csiDriverName string,
 ) {
-	// Fetch node name from environment variable
-	k8sNodeName := os.Getenv("KUBE_NODE_NAME")
-	if k8sNodeName == "" {
-		glog.Error("Node name not found. The environment variable KUBE_NODE_NAME is empty.")
-		os.Exit(1)
-	}
-
-	// Get CSI Driver Node ID
-	glog.V(1).Infof("Calling CSI driver to discover node ID.")
-	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
-	defer cancel()
-	csiDriverNodeId, err := csiConn.NodeGetId(ctx)
-	if err != nil {
-		glog.Error(err.Error())
-		os.Exit(1)
-	}
-	glog.V(2).Infof("CSI driver node ID: %q", csiDriverNodeId)
-
 	// When kubeletRegistrationPath is specified then driver-registrar ONLY acts
 	// as gRPC server which replies to registration requests initiated by kubelet's
 	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.

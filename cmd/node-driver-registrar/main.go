@@ -136,5 +136,5 @@ func main() {
 	glog.V(2).Infof("CSI driver name: %q", csiDriverName)
 
 	// Run forever
-	nodeRegister(csiConn, csiDriverName)
+	nodeRegister(csiDriverName)
 }
