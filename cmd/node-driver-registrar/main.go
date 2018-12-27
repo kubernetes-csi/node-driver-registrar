@@ -44,15 +44,10 @@ const (
 // Command line flags
 var (
 	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
-	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Address of the CSI driver socket.")
-	kubeletRegistrationPath = flag.String("kubelet-registration-path", "",
-		`Enables Kubelet Plugin Registration service, and returns the specified path as "endpoint" in "PluginInfo" response.
-If this option is set, the driver-registrar expose a unix domain socket to handle Kubelet Plugin Registration,
-this socket MUST be surfaced on the host in the kubelet plugin registration directory (in addition to the CSI driver socket).
-If plugin registration is enabled on kubelet (kubelet flag KubeletPluginsWatcher is set), then this option should be set
-and the value should be the path of the CSI driver socket on the host machine.`)
-	showVersion = flag.Bool("version", false, "Show version.")
-	version     = "unknown"
+	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
+	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
+	showVersion             = flag.Bool("version", false, "Show version.")
+	version                 = "unknown"
 
 	// List of supported versions
 	supportedVersions = []string{"1.0.0"}
