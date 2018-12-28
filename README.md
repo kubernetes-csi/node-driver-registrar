@@ -12,7 +12,7 @@ the CSI calls on.
 ## Compatibility
 Latest stable release | Branch| Compatible with CSI Version | Container Image | Min K8s Version | Max K8s Version
 -----------------------|-----------------------|-----------------------------|----------------|---------|--------|
-[node-driver-registrar v1.0.2](https://github.com/kubernetes-csi/cluster-driver-registrar/releases/tag/v1.0.2) | [release-1.0](https://github.com/kubernetes-csi/node-driver-registrar/tree/release-1.0) | [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar:v1.0.2 | 1.13 | -
+[node-driver-registrar v1.0.2](https://github.com/kubernetes-csi/node-driver-registrar/releases/tag/v1.0.2) | [release-1.0](https://github.com/kubernetes-csi/node-driver-registrar/tree/release-1.0) | [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar:v1.0.2 | 1.13 | -
 [driver-registrar v0.4.2](https://github.com/kubernetes-csi/driver-registrar/releases/tag/v0.4.2) | [release-0.4](https://github.com/kubernetes-csi/driver-registrar/tree/release-0.4) | [CSI Spec v0.3.0](https://github.com/container-storage-interface/spec/releases/tag/v0.3.0) | quay.io/k8scsi/driver-registrar:v0.4.2 | 1.10 | -
 
 
