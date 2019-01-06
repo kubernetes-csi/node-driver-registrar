@@ -54,6 +54,7 @@ var (
 	_ CSIConnection = &csiConnection{}
 )
 
+//NewConnection return a grpc connection object to a remote CSI driver.
 func NewConnection(
 	address string, timeout time.Duration) (CSIConnection, error) {
 	conn, err := connect(address, timeout)
