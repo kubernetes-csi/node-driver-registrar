@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/kubernetes-csi/node-driver-registrar.svg?branch=master)](https://travis-ci.org/kubernetes-csi/node-driver-registrar)
+
 # Node Driver Registrar
+
 The node-driver-registrar is a sidecar container that registers the CSI driver
 with Kubelet using the
 [kubelet plugin registration mechanism](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/#device-plugin-registration).
@@ -10,16 +12,17 @@ your CSI driver with Kubelet so that it knows which Unix domain socket to issue
 the CSI calls on.
 
 ## Compatibility
-Latest stable release | Branch| Compatible with CSI Version | Container Image | Min K8s Version | Max K8s Version
------------------------|-----------------------|-----------------------------|----------------|---------|--------|
-[node-driver-registrar v1.0.2](https://github.com/kubernetes-csi/node-driver-registrar/releases/tag/v1.0.2) | [release-1.0](https://github.com/kubernetes-csi/node-driver-registrar/tree/release-1.0) | [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar:v1.0.2 | 1.13 | -
-[driver-registrar v0.4.2](https://github.com/kubernetes-csi/driver-registrar/releases/tag/v0.4.2) | [release-0.4](https://github.com/kubernetes-csi/driver-registrar/tree/release-0.4) | [CSI Spec v0.3.0](https://github.com/container-storage-interface/spec/releases/tag/v0.3.0) | quay.io/k8scsi/driver-registrar:v0.4.2 | 1.10 | -
 
+| Latest stable release                                                                                       | Branch                                                                                  | Compatible with CSI Version                                                                | Container Image                                 | Min K8s Version | Max K8s Version |
+|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|-------------------------------------------------|-----------------|-----------------|
+| [node-driver-registrar v1.0.2](https://github.com/kubernetes-csi/node-driver-registrar/releases/tag/v1.0.2) | [release-1.0](https://github.com/kubernetes-csi/node-driver-registrar/tree/release-1.0) | [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar:v1.0.2 | 1.13            | -               |
+| [driver-registrar v0.4.2](https://github.com/kubernetes-csi/driver-registrar/releases/tag/v0.4.2)           | [release-0.4](https://github.com/kubernetes-csi/driver-registrar/tree/release-0.4)      | [CSI Spec v0.3.0](https://github.com/container-storage-interface/spec/releases/tag/v0.3.0) | quay.io/k8scsi/driver-registrar:v0.4.2          | 1.10            | -               |
 
 For release-0.4 and below, please refer to the [node-registrar
 repository](https://github.com/kubernetes-csi/driver-registrar).
 
 ## Usage
+
 There are two UNIX domain sockets used by the node-driver-registrar:
 
 * Registration socket:
@@ -46,11 +49,13 @@ There are two UNIX domain sockets used by the node-driver-registrar:
   the path to the registration socket.
 
 ### Required permissions
+
 The node-driver-registrar does not interact with the Kubernetes API, so no RBAC
 rules are needed.
 
 It does, however, need to be able to mount hostPath volumes and have the file
 permissions to:
+
 * Access the CSI driver socket (typically in `/var/lib/kubelet/plugins/<drivername.example.com>/`).
   * Used by the `node-driver-registrar` to fetch the driver name from the driver
     contain (via the CSI `GetPluginInfo()` call).
@@ -58,8 +63,10 @@ permissions to:
   * Used by the `node-driver-registrar` to register the driver with kubelet.
 
 ### Example
+
 Here is an example sidecar spec in the driver DaemonSet. `<drivername.example.com>` should be replaced by
 the actual driver's name.
+
 ```
       containers:
         - name: csi-driver-registrar
@@ -87,17 +94,16 @@ the actual driver's name.
             type: DirectoryOrCreate
 ```
 
-
 ## Community, discussion, contribution, and support
 
 Learn how to engage with the Kubernetes community on the [community page](http://kubernetes.io/community/).
 
 You can reach the maintainers of this project at:
 
-- Slack channels
-  - [#wg-csi](https://kubernetes.slack.com/messages/wg-csi)
-  - [#sig-storage](https://kubernetes.slack.com/messages/sig-storage)
-- [Mailing list](https://groups.google.com/forum/#!forum/kubernetes-sig-storage)
+* Slack channels
+  * [#wg-csi](https://kubernetes.slack.com/messages/wg-csi)
+  * [#sig-storage](https://kubernetes.slack.com/messages/sig-storage)
+* [Mailing list](https://groups.google.com/forum/#!forum/kubernetes-sig-storage)
 
 ### Code of conduct
 
