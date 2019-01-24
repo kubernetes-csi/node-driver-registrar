@@ -12,37 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: all node-driver-registrar clean test
+CMDS=csi-node-driver-registrar
+all: build
 
-REGISTRY_NAME=quay.io/k8scsi
-IMAGE_NAME=csi-node-driver-registrar
-IMAGE_VERSION=canary
-IMAGE_TAG=$(REGISTRY_NAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
-
-REV=$(shell git describe --long --tags --match='v*' --dirty)
-
-ifdef V
-TESTARGS = -v -args -alsologtostderr -v 5
-else
-TESTARGS =
-endif
-
-
-all: node-driver-registrar
-
-node-driver-registrar:
-	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-X main.version=$(REV) -extldflags "-static"' -o ./bin/node-driver-registrar ./cmd/node-driver-registrar
-
-clean:
-	rm -rf bin
-
-container: node-driver-registrar
-	docker build -t $(IMAGE_TAG) .
-
-push: container
-	docker push $(IMAGE_TAG)
-
-test:
-	go test `go list ./... | grep -v 'vendor'` $(TESTARGS)
-	go vet `go list ./... | grep -v vendor`
+include release-tools/build.make
