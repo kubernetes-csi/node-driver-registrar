@@ -1,8 +1,15 @@
 approvers:
+- jsafrane
+- lpabon
+- msau42
 - saad-ali
 - sbezverk
-- lpabon
 - vladimirvivien
-- msau42
 reviewers:
 - davidz627
+- jsafrane
+- lpabon
+- msau42
+- saad-ali
+- sbezverk
+- vladimirvivien
