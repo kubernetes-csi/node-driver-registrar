@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/connection"
@@ -73,7 +73,7 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
-	glog.Infof("Received GetInfo call: %+v", req)
+	klog.Infof("Received GetInfo call: %+v", req)
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
 		Name:              e.driverName,
@@ -83,9 +83,9 @@ func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRe
 }
 
 func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status *registerapi.RegistrationStatus) (*registerapi.RegistrationStatusResponse, error) {
-	glog.Infof("Received NotifyRegistrationStatus call: %+v", status)
+	klog.Infof("Received NotifyRegistrationStatus call: %+v", status)
 	if !status.PluginRegistered {
-		glog.Errorf("Registration process failed with error: %+v, restarting registration container.", status.Error)
+		klog.Errorf("Registration process failed with error: %+v, restarting registration container.", status.Error)
 		os.Exit(1)
 	}
 
@@ -93,11 +93,12 @@ func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status
 }
 
 func main() {
+	klog.InitFlags(nil)
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
 	if *kubeletRegistrationPath == "" {
-		glog.Error("kubelet-registration-path is a required parameter")
+		klog.Error("kubelet-registration-path is a required parameter")
 		os.Exit(1)
 	}
 
@@ -105,30 +106,30 @@ func main() {
 		fmt.Println(os.Args[0], version)
 		return
 	}
-	glog.Infof("Version: %s", version)
+	klog.Infof("Version: %s", version)
 
 	// Once https://github.com/container-storage-interface/spec/issues/159 is
 	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
 	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	// Connect to CSI.
-	glog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
+	klog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
 	csiConn, err := connection.NewConnection(*csiAddress, *connectionTimeout)
 	if err != nil {
-		glog.Error(err.Error())
+		klog.Error(err.Error())
 		os.Exit(1)
 	}
 
 	// Get CSI driver name.
-	glog.V(1).Infof("Calling CSI driver to discover driver name.")
+	klog.V(1).Infof("Calling CSI driver to discover driver name.")
 	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
 	defer cancel()
 	csiDriverName, err := csiConn.GetDriverName(ctx)
 	if err != nil {
-		glog.Error(err.Error())
+		klog.Error(err.Error())
 		os.Exit(1)
 	}
-	glog.V(2).Infof("CSI driver name: %q", csiDriverName)
+	klog.V(2).Infof("CSI driver name: %q", csiDriverName)
 
 	// Run forever
 	nodeRegister(csiDriverName)
