@@ -13,6 +13,8 @@ the CSI calls on.
 
 ## Compatibility
 
+This information reflects the head of this branch.
+
 | Compatible with CSI Version                                                                | Container Image                                 | Min K8s Version |
 | ------------------------------------------------------------------------------------------ | ----------------------------------------------- | --------------- |
 | [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar        | 1.13            |
