@@ -23,8 +23,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/golang/glog"
 	"golang.org/x/sys/unix"
+	"k8s.io/klog"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 )
 
@@ -40,32 +40,32 @@ func nodeRegister(
 	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
 		// Remove any socket, stale or not, but fall through for other files
 		if err := os.Remove(socketPath); err != nil {
-			glog.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
+			klog.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
 			os.Exit(1)
 		}
 	}
 	if err != nil && !os.IsNotExist(err) {
-		glog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
+		klog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
 		os.Exit(1)
 	}
 	// Default to only user accessible socket, caller can open up later if desired
 	oldmask := unix.Umask(0077)
 
-	glog.Infof("Starting Registration Server at: %s\n", socketPath)
+	klog.Infof("Starting Registration Server at: %s\n", socketPath)
 	lis, err := net.Listen("unix", socketPath)
 	if err != nil {
-		glog.Errorf("failed to listen on socket: %s with error: %+v", socketPath, err)
+		klog.Errorf("failed to listen on socket: %s with error: %+v", socketPath, err)
 		os.Exit(1)
 	}
 	unix.Umask(oldmask)
-	glog.Infof("Registration Server started at: %s\n", socketPath)
+	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
-		glog.Errorf("Registration Server stopped serving: %v", err)
+		klog.Errorf("Registration Server stopped serving: %v", err)
 		os.Exit(1)
 	}
 	// If gRPC server is gracefully shutdown, exit

@@ -31,9 +31,6 @@
   name = "github.com/kubernetes-csi/csi-test"
   version = "v1.0.0-1"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/golang/glog"
 
 [[override]]
   name = "github.com/json-iterator/go"
