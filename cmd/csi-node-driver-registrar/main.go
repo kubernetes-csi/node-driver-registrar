@@ -43,7 +43,7 @@ const (
 
 // Command line flags
 var (
-	connectionTimeout       = flag.Duration("connection-timeout", 1*time.Minute, "Timeout for waiting for CSI driver socket.")
+	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
 	showVersion             = flag.Bool("version", false, "Show version.")
@@ -108,13 +108,17 @@ func main() {
 	}
 	klog.Infof("Version: %s", version)
 
+	if *connectionTimeout != 0 {
+		klog.Warning("--connection-timeout is deprecated and will have no effect")
+	}
+
 	// Once https://github.com/container-storage-interface/spec/issues/159 is
 	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
 	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	// Connect to CSI.
 	klog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
-	csiConn, err := connection.NewConnection(*csiAddress, *connectionTimeout)
+	csiConn, err := connection.NewConnection(*csiAddress)
 	if err != nil {
 		klog.Error(err.Error())
 		os.Exit(1)
