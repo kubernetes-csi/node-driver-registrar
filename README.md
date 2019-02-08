@@ -30,6 +30,7 @@ There are two UNIX domain sockets used by the node-driver-registrar:
   * Created by the `node-driver-registrar`.
   * Exposed on a Kubernetes node via hostpath in the Kubelet plugin registry.
     (typically `/var/lib/kubelet/plugins_registry/<drivername.example.com>-reg.sock`).
+    The hostpath volume must be mounted at `/registration`.
 
 * CSI driver socket:
   * Used by kubelet to interact with the CSI driver.
