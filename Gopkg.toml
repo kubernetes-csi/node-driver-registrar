@@ -38,7 +38,7 @@
 
 [[constraint]]
   name = "github.com/kubernetes-csi/csi-lib-utils"
-  version = "0.1.0"
+  version = "0.3.0"
 
 [prune]
   non-go = true
