@@ -19,15 +19,12 @@ package connection
 import (
 	"context"
 	"fmt"
-	"net"
-	"strings"
-	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
+	"github.com/kubernetes-csi/csi-lib-utils/connection"
 	"github.com/kubernetes-csi/csi-lib-utils/protosanitizer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/status"
 	"k8s.io/klog"
 )
@@ -56,46 +53,14 @@ var (
 
 //NewConnection return a grpc connection object to a remote CSI driver.
 func NewConnection(
-	address string, timeout time.Duration) (CSIConnection, error) {
-	conn, err := connect(address, timeout)
+	address string) (CSIConnection, error) {
+	conn, err := connection.Connect(address)
 	if err != nil {
 		return nil, err
 	}
 	return &csiConnection{
 		conn: conn,
 	}, nil
-}
-
-func connect(address string, timeout time.Duration) (*grpc.ClientConn, error) {
-	klog.V(2).Infof("Connecting to %s", address)
-	dialOptions := []grpc.DialOption{
-		grpc.WithInsecure(),
-		grpc.WithBackoffMaxDelay(time.Second),
-		grpc.WithUnaryInterceptor(logGRPC),
-	}
-	if strings.HasPrefix(address, "/") {
-		dialOptions = append(dialOptions, grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
-			return net.DialTimeout("unix", addr, timeout)
-		}))
-	}
-	conn, err := grpc.Dial(address, dialOptions...)
-
-	if err != nil {
-		return nil, err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	for {
-		if !conn.WaitForStateChange(ctx, conn.GetState()) {
-			klog.V(4).Infof("Connection timed out")
-			return conn, nil // return nil, subsequent GetPluginInfo will show the real connection error
-		}
-		if conn.GetState() == connectivity.Ready {
-			klog.V(3).Infof("Connected")
-			return conn, nil
-		}
-		klog.V(4).Infof("Still trying, connection is %s", conn.GetState())
-	}
 }
 
 func (c *csiConnection) GetDriverName(ctx context.Context) (string, error) {
