@@ -1,0 +1,10 @@
+FROM registry.svc.ci.openshift.org/openshift/release:golang-1.11 AS builder
+WORKDIR /go/src/github.com/kubernetes-csi/node-driver-registrar
+COPY . .
+RUN go build ./cmd/csi-node-driver-registrar
+
+FROM registry.svc.ci.openshift.org/openshift/origin-v4.0:base
+COPY --from=builder /go/src/github.com/kubernetes-csi/node-driver-registrar/csi-node-driver-registrar /usr/bin/
+RUN useradd csi-node-driver-registrar
+USER csi-node-driver-registrar
+ENTRYPOINT ["/usr/bin/csi-node-driver-registrar"]
