@@ -51,10 +51,14 @@ IMAGE_TAGS+=$(shell tagged="$$(git describe --tags --match='v*' --abbrev=0)"; if
 IMAGE_NAME=$(REGISTRY_NAME)/$*
 
 ifdef V
+# Adding "-alsologtostderr" assumes that all test binaries contain glog. This is not guaranteed.
 TESTARGS = -v -args -alsologtostderr -v 5
 else
 TESTARGS =
 endif
+
+# Specific packages can be excluded from each of the tests below by setting the *_FILTER_CMD variables
+# to something like "| grep -v 'github.com/kubernetes-csi/project/pkg/foobar'". See usage below.
 
 build-%:
 	mkdir -p bin
@@ -70,7 +74,7 @@ push-%: container-%
 		docker push $(IMAGE_NAME):$$tag; \
 	}; \
 	for tag in $(IMAGE_TAGS); do \
-		if echo $$tag | grep -q -e '-canary$$'; then \
+		if [ "$$tag" = "canary" ] || echo "$$tag" | grep -q -e '-canary$$'; then \
 			: "creating or overwriting canary image"; \
 			push_image; \
 		elif docker pull $(IMAGE_NAME):$$tag 2>&1 | tee /dev/stderr | grep -q "manifest for $(IMAGE_NAME):$$tag not found"; then \
@@ -93,28 +97,57 @@ test:
 .PHONY: test-go
 test: test-go
 test-go:
-	@ echo; echo $@
-	go test `go list ./... | grep -v 'vendor'` $(TESTARGS)
+	@ echo; echo "### $@:"
+	go test `go list ./... | grep -v -e 'vendor' -e '/test/e2e$$' $(TEST_GO_FILTER_CMD)` $(TESTARGS)
 
 .PHONY: test-vet
 test: test-vet
 test-vet:
-	@ echo; echo $@
-	go vet `go list ./... | grep -v vendor`
+	@ echo; echo "### $@:"
+	go vet `go list ./... | grep -v vendor $(TEST_VET_FILTER_CMD)`
 
 .PHONY: test-fmt
 test: test-fmt
 test-fmt:
-	@ echo; echo $@
-	files=$$(find . -name '*.go' | grep -v './vendor'); \
+	@ echo; echo "### $@:"
+	files=$$(find . -name '*.go' | grep -v './vendor' $(TEST_FMT_FILTER_CMD)); \
 	if [ $$(gofmt -d $$files | wc -l) -ne 0 ]; then \
 		echo "formatting errors:"; \
 		gofmt -d $$files; \
 		false; \
 	fi
 
+# This test only runs when dep >= 0.5 is installed, which is the case for the CI setup.
+.PHONY: test-vendor
+test: test-vendor
+test-vendor:
+	@ echo; echo "### $@:"
+	@ case "$$(dep version 2>/dev/null | grep 'version *:')" in \
+		*v0.[56789]*) dep check && echo "vendor up-to-date" || false;; \
+		*) echo "skipping check, dep >= 0.5 required";; \
+	esac
+
 .PHONY: test-subtree
 test: test-subtree
 test-subtree:
-	@ echo; echo $@
+	@ echo; echo "### $@:"
 	./release-tools/verify-subtree.sh release-tools
+
+# Components can extend the set of directories which must pass shellcheck.
+# The default is to check only the release-tools directory itself.
+TEST_SHELLCHECK_DIRS=release-tools
+.PHONY: test-shellcheck
+test: test-shellcheck
+test-shellcheck:
+	@ echo; echo "### $@:"
+	@ ret=0; \
+	if ! command -v docker; then \
+		echo "skipped, no Docker"; \
+		exit 0; \
+        fi; \
+	for dir in $(abspath $(TEST_SHELLCHECK_DIRS)); do \
+		echo; \
+		echo "$$dir:"; \
+		./release-tools/verify-shellcheck.sh "$$dir" || ret=1; \
+	done; \
+	exit $$ret
