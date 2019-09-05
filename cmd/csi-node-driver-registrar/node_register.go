@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 
 	"google.golang.org/grpc"
 
-	"golang.org/x/sys/unix"
 	"k8s.io/klog"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 )
@@ -48,8 +48,12 @@ func nodeRegister(
 		klog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
 		os.Exit(1)
 	}
-	// Default to only user accessible socket, caller can open up later if desired
-	oldmask := unix.Umask(0077)
+
+	var oldmask int
+	if runtime.GOOS == "linux" {
+		// Default to only user accessible socket, caller can open up later if desired
+		oldmask, _ = umask(0077)
+	}
 
 	klog.Infof("Starting Registration Server at: %s\n", socketPath)
 	lis, err := net.Listen("unix", socketPath)
@@ -57,7 +61,9 @@ func nodeRegister(
 		klog.Errorf("failed to listen on socket: %s with error: %+v", socketPath, err)
 		os.Exit(1)
 	}
-	unix.Umask(oldmask)
+	if runtime.GOOS == "linux" {
+		umask(oldmask)
+	}
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
 	// Registers kubelet plugin watcher api.
