@@ -36,9 +36,9 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 * CSI driver socket:
   * Used by kubelet to interact with the CSI driver.
   * Created by the CSI driver.
-  * Exposed on a Kubernetes node via hostpath somewhere other than the Kubelet.
-    plugin registry (typically `/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock`).
+  * Exposed on a Kubernetes node via hostpath somewhere other than the Kubelet plugin registry. (typically `/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock`).
   * This is the socket referenced by the `--csi-address` and `--kubelet-registration-path` arguments.
+  * Note that before Kubernetes v1.17, if the csi socket is in the `/var/lib/kubelet/plugins/` path, kubelet may log a lot of harmless errors regarding grpc `GetInfo` call not implemented (fix in kubernetes/kubernetes#84533). The `/var/lib/kubelet/csi-plugins/` path is preferred in Kubernetes versions prior to v1.17.
 
 ### Required arguments
 
