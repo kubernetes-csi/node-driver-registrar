@@ -76,10 +76,6 @@ the actual driver's name.
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "rm -rf /registration/<plugin> /registration/<drivername.example.com>-reg.sock"]
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
