@@ -21,6 +21,7 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -36,6 +37,15 @@ func nodeRegister(
 	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
 	registrar := newRegistrationServer(csiDriverName, *kubeletRegistrationPath, supportedVersions)
 	socketPath := fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
+
+	ticker := time.NewTicker(5 * time.Second)
+	for {
+		<-ticker.C
+		go periodicallyCheck(socketPath, registrar)
+	}
+}
+
+func periodicallyCheck(socketPath string, registrar registerapi.RegistrationServer) {
 	fi, err := os.Stat(socketPath)
 	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
 		// Remove any socket, stale or not, but fall through for other files
@@ -44,6 +54,12 @@ func nodeRegister(
 			os.Exit(1)
 		}
 	}
+
+	if err == nil && (fi.Mode()&os.ModeSocket) == 0 {
+		// If listening
+		os.Exit(0)
+	}
+
 	if err != nil && !os.IsNotExist(err) {
 		klog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
 		os.Exit(1)
@@ -64,6 +80,7 @@ func nodeRegister(
 	if runtime.GOOS == "linux" {
 		umask(oldmask)
 	}
+
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
 	// Registers kubelet plugin watcher api.
