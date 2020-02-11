@@ -16,12 +16,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package util
 
 import (
+	"fmt"
+	"os"
+
 	"golang.org/x/sys/unix"
 )
 
-func umask(mask int) (int, error) {
+func Umask(mask int) (int, error) {
 	return unix.Umask(mask), nil
+}
+
+func CleanupSocketFile(socketPath string) error {
+	fi, err := os.Stat(socketPath)
+	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
+		// Remove any socket, stale or not, but fall through for other files
+		if err := os.Remove(socketPath); err != nil {
+			return fmt.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
+		}
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
+	}
+	return nil
 }
