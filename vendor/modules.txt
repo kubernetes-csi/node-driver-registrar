@@ -58,6 +58,8 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/transport
+# k8s.io/client-go v11.0.0+incompatible
+k8s.io/client-go/util/testing
 # k8s.io/klog v0.1.0
 k8s.io/klog
 # k8s.io/kubernetes v1.11.0-beta.2
