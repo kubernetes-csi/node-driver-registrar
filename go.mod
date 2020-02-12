@@ -15,6 +15,7 @@ require (
 	golang.org/x/text v0.3.0 // indirect
 	google.golang.org/genproto v0.0.0-20180301225018-2c5e7ac708aa // indirect
 	google.golang.org/grpc v1.10.0
+	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/klog v0.1.0
 	k8s.io/kubernetes v1.11.0-beta.2
 )
