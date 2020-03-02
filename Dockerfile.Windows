@@ -18,7 +18,6 @@ FROM ${servercoreTag} as core
 
 FROM ${nanoserverTag}
 LABEL description="CSI Node driver registrar"
-# COPY ./bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
 COPY --from=core /Windows/System32/netapi32.dll /Windows/System32/netapi32.dll
 COPY --from=builder gopath/src/github.com/kubernetes-csi/node-driver-registrar/bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
 USER ContainerAdministrator
