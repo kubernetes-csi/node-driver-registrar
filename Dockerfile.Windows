@@ -1,9 +1,25 @@
-FROM mcr.microsoft.com/windows/servercore:1809 as core
+# Other common ones: 1803-amd64, 1903-amd64
+# full list: curl -L https://mcr.microsoft.com/v2/windows/nanoserver/tags/list
 
-FROM mcr.microsoft.com/windows/nanoserver:1809
+ARG golangTag=1.12.6-windowsservercore-1809
+ARG nanoserverTag="mcr.microsoft.com/windows/nanoserver:1809"
+ARG servercoreTag="mcr.microsoft.com/windows/servercore:1809"
+ARG goflags_vendor=""
+ARG buildVersion=""
+
+FROM golang:${golangTag} as builder
+ENV SRC_PATH="src/github.com/kubernetes-csi/node-driver-registrar"
+COPY . ${SRC_PATH}
+RUN cd $ENV:SRC_PATH ; go build ${goflags_vendor} -a -ldflags '-X main.version=${buildVersion} -extldflags "-static"' -o ./bin/csi-node-driver-registrar.exe ./cmd/csi-node-driver-registrar ; ls ./bin ;
+
+
+FROM ${servercoreTag} as core
+
+
+FROM ${nanoserverTag}
 LABEL description="CSI Node driver registrar"
-
-COPY ./bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
+# COPY ./bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
 COPY --from=core /Windows/System32/netapi32.dll /Windows/System32/netapi32.dll
+COPY --from=builder gopath/src/github.com/kubernetes-csi/node-driver-registrar/bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
 USER ContainerAdministrator
 ENTRYPOINT ["/csi-node-driver-registrar.exe"]
