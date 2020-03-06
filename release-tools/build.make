@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: build-% build container-% container push-% push clean test
+.PHONY: build-% build container-% container clean test
 
 # A space-separated list of all commands in the repository, must be
 # set in main Makefile of a repository.
@@ -73,25 +73,21 @@ build-%: check-go-version-go
 		CGO_ENABLED=0 GOOS=linux GOARCH=ppc64le go build $(GOFLAGS_VENDOR) -a -ldflags '-X main.version=$(REV) -extldflags "-static"' -o ./bin/$*-ppc64le ./cmd/$* ; \
 	fi
 
+# Modifying container target to build multiarch docker image and push it to docker registry in single go.
 container-%: build-%
-	docker build -t $*:latest -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .
-
-push-%: container-%
-	set -ex; \
-	push_image () { \
-		docker tag $*:latest $(IMAGE_NAME):$$tag; \
-		docker push $(IMAGE_NAME):$$tag; \
-	}; \
+	export DOCKER_CLI_EXPERIMENTAL=enabled
+	docker run --rm --privileged linuxkit/binfmt:v0.7
+	docker buildx create --use --name multiarchimage-builder
 	for tag in $(IMAGE_TAGS); do \
-		if [ "$$tag" = "canary" ] || echo "$$tag" | grep -q -e '-canary$$'; then \
-			: "creating or overwriting canary image"; \
-			push_image; \
-		elif docker pull $(IMAGE_NAME):$$tag 2>&1 | tee /dev/stderr | grep -q "manifest for $(IMAGE_NAME):$$tag not found"; then \
-			: "creating release image"; \
-			push_image; \
-		else \
-			: "release image $(IMAGE_NAME):$$tag already exists, skipping push"; \
-		fi; \
+                if [ "$$tag" = "canary" ] || echo "$$tag" | grep -q -e '-canary$$'; then \
+                        : "creating or overwriting canary image"; \
+                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
+                elif docker pull $(IMAGE_NAME):$$tag 2>&1 | tee /dev/stderr | grep -q "manifest for $(IMAGE_NAME):$$tag not found"; then \
+                        : "creating release image"; \
+                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
+                else \
+                        : "release image $(IMAGE_NAME):$$tag already exists, skipping push"; \
+                fi; \
 	done
 
 build: $(CMDS:%=build-%)
