@@ -22,6 +22,9 @@
 # including build.make.
 REGISTRY_NAME=quay.io/k8scsi
 
+# To enable experimental features on the Docker daemon
+DOCKER_CLI_EXPERIMENTAL=enabled
+
 # Can be set to -mod=vendor to ensure that the "vendor" directory is used.
 GOFLAGS_VENDOR=
 
@@ -75,7 +78,6 @@ build-%: check-go-version-go
 
 # Modifying container target to build multiarch docker image and push it to docker registry in single go.
 container-%: build-%
-	export DOCKER_CLI_EXPERIMENTAL=enabled
 	docker run --rm --privileged linuxkit/binfmt:v0.7
 	docker buildx create --use --name multiarchimage-builder
 	for tag in $(IMAGE_TAGS); do \
