@@ -22,10 +22,6 @@
 # including build.make.
 REGISTRY_NAME=quay.io/k8scsi
 
-# To enable experimental features on the Docker daemon
-DOCKER_CLI_EXPERIMENTAL:=enabled
-export DOCKER_CLI_EXPERIMENTAL
-
 # Can be set to -mod=vendor to ensure that the "vendor" directory is used.
 GOFLAGS_VENDOR=
 
@@ -65,6 +61,10 @@ TESTARGS =
 endif
 
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
+
+# To enable experimental features on the Docker daemon
+DOCKER_CLI_EXPERIMENTAL:=enabled
+#export DOCKER_CLI_EXPERIMENTAL
 
 # Specific packages can be excluded from each of the tests below by setting the *_FILTER_CMD variables
 # to something like "| grep -v 'github.com/kubernetes-csi/project/pkg/foobar'". See usage below.
