@@ -23,7 +23,8 @@
 REGISTRY_NAME=quay.io/k8scsi
 
 # To enable experimental features on the Docker daemon
-DOCKER_CLI_EXPERIMENTAL=enabled
+DOCKER_CLI_EXPERIMENTAL:=enabled
+export DOCKER_CLI_EXPERIMENTAL
 
 # Can be set to -mod=vendor to ensure that the "vendor" directory is used.
 GOFLAGS_VENDOR=
