@@ -81,21 +81,21 @@ build-%: check-go-version-go
 container-%: build-%
 	docker run --rm --privileged linuxkit/binfmt:v0.7
 	docker buildx create --use --name multiarchimage-builder
-	for tag in $(IMAGE_TAGS); do \
-                if [ "$$tag" = "canary" ] || echo "$$tag" | grep -q -e '-canary$$'; then \
-                        : "creating or overwriting canary image"; \
-                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
-                elif docker pull $(IMAGE_NAME):$$tag 2>&1 | tee /dev/stderr | grep -q "manifest for $(IMAGE_NAME):$$tag not found"; then \
-                        : "creating release image"; \
-                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
-                else \
-                        : "release image $(IMAGE_NAME):$$tag already exists, skipping push"; \
-                fi; \
-	done
+	docker buildx build --push -t $(IMAGE_NAME):latest --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .;
+#	for tag in $(IMAGE_TAGS); do \
+#                if [ "$$tag" = "canary" ] || echo "$$tag" | grep -q -e '-canary$$'; then \
+#                        : "creating or overwriting canary image"; \
+#                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
+#                elif docker pull $(IMAGE_NAME):$$tag 2>&1 | tee /dev/stderr | grep -q "manifest for $(IMAGE_NAME):$$tag not found"; then \
+#                       : "creating release image"; \
+#                        docker buildx build --push -t $(IMAGE_NAME):$$tag --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .; \
+#                else \
+#                        : "release image $(IMAGE_NAME):$$tag already exists, skipping push"; \
+#                fi; \
+#	done
 
 build: $(CMDS:%=build-%)
 container: $(CMDS:%=container-%)
-push: $(CMDS:%=push-%)
 
 clean:
 	-rm -rf bin
