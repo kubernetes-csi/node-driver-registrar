@@ -63,8 +63,7 @@ endif
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
 # To enable experimental features on the Docker daemon
-DOCKER_CLI_EXPERIMENTAL:=enabled
-export DOCKER_CLI_EXPERIMENTAL
+export DOCKER_CLI_EXPERIMENTAL:=enabled
 
 # Specific packages can be excluded from each of the tests below by setting the *_FILTER_CMD variables
 # to something like "| grep -v 'github.com/kubernetes-csi/project/pkg/foobar'". See usage below.
@@ -79,7 +78,6 @@ build-%: check-go-version-go
 
 # Modifying container target to build multiarch docker image and push it to docker registry in single go.
 container-%: build-%
-	docker run --rm --privileged linuxkit/binfmt:v0.7
 	docker buildx create --use --name multiarchimage-builder
 	docker buildx build --push -t $(IMAGE_NAME):latest --platform=linux/amd64,linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi) --label revision=$(REV) .;
 #	for tag in $(IMAGE_TAGS); do \
