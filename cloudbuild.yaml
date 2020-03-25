@@ -1,4 +1,4 @@
-# See https://cloud.google.com/cloud-build/docs/build-config
+# See https://github.com/kubernetes/test-infra/blob/master/config/jobs/image-pushing/README.md for more details on image pushing process
 
 # this must be specified in seconds. If omitted, defaults to 600s (10 mins)
 timeout: 1200s
