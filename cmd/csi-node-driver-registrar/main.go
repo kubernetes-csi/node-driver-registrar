@@ -38,7 +38,7 @@ const (
 	// Default timeout of short CSI calls like GetPluginInfo
 	csiTimeout = time.Second
 
-	// Verify (and update, if needed) the node ID at this freqeuency.
+	// Verify (and update, if needed) the node ID at this frequency.
 	sleepDuration = 2 * time.Minute
 )
 
