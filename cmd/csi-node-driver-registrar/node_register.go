@@ -24,6 +24,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog"
 	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 )
@@ -36,23 +37,15 @@ func nodeRegister(
 	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
 	registrar := newRegistrationServer(csiDriverName, *kubeletRegistrationPath, supportedVersions)
 	socketPath := fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
-	fi, err := os.Stat(socketPath)
-	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
-		// Remove any socket, stale or not, but fall through for other files
-		if err := os.Remove(socketPath); err != nil {
-			klog.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
-			os.Exit(1)
-		}
-	}
-	if err != nil && !os.IsNotExist(err) {
-		klog.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
+	if err := util.CleanupSocketFile(socketPath); err != nil {
+		klog.Errorf("%+v", err)
 		os.Exit(1)
 	}
 
 	var oldmask int
 	if runtime.GOOS == "linux" {
 		// Default to only user accessible socket, caller can open up later if desired
-		oldmask, _ = umask(0077)
+		oldmask, _ = util.Umask(0077)
 	}
 
 	klog.Infof("Starting Registration Server at: %s\n", socketPath)
@@ -62,7 +55,7 @@ func nodeRegister(
 		os.Exit(1)
 	}
 	if runtime.GOOS == "linux" {
-		umask(oldmask)
+		util.Umask(oldmask)
 	}
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
