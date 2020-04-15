@@ -16,7 +16,8 @@ steps:
     args:
     - '-c'
     - |
-      docker buildx create --use --name multiarchimage-builder \
+      export DOCKER_CLI_EXPERIMENTAL=enabled \
+      && docker buildx create --use --name multiarchimage-builder \
       && docker buildx build --push -t gcr.io/k8s-staging-csi/csi-node-driver-registrar:latest --platform=linux/amd64,linux/s390x -f Dockerfile.multiarch .
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
