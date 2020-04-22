@@ -13,6 +13,7 @@ steps:
     - DOCKER_CLI_EXPERIMENTAL=enabled
     - VERSION=$_GIT_TAG
     - BASE_REF=$_PULL_BASE_REF
+    - HOME=/root
     args:
     - '-c'
     - |
