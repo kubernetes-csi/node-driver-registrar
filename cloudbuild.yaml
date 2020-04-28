@@ -18,8 +18,16 @@ steps:
     - '-c'
     - |
       export DOCKER_CLI_EXPERIMENTAL=enabled \
+      && gcloud auth configure-docker \
       && docker buildx create --use --name multiarchimage-builder \
-      && docker buildx build --push -t gcr.io/k8s-staging-csi/csi-node-driver-registrar:latest --platform=linux/amd64,linux/s390x -f Dockerfile.multiarch .
+      && docker buildx build --load -t gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:amd64-$_GIT_TAG --platform=linux/amd64 -f Dockerfile.multiarch . \
+      && docker push gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:amd64-$_GIT_TAG \
+      && docker buildx build --load -t gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:s390x-$_GIT_TAG --platform=linux/s390x -f Dockerfile.multiarch . \
+      && docker push gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:s390x-$_GIT_TAG \
+      && docker manifest create --amend gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:$_GIT_TAG \
+        gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:amd64-$_GIT_TAG \
+        gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:s390x-$_GIT_TAG \
+      && docker manifest push -p gcr.io/$_STAGING_PROJECT/csi-node-driver-registrar:$_GIT_TAG
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
@@ -27,4 +35,4 @@ substitutions:
   # _PULL_BASE_REF will contain the ref that was pushed to to trigger this build -
   # a branch like 'master' or 'release-0.2', or a tag like 'v0.2'.
   _PULL_BASE_REF: 'master'
-
+  _STAGING_PROJECT: 'k8s-staging-csi'
