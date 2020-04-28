@@ -4,7 +4,7 @@ ARG BUILDPLATFORM
 WORKDIR /code
 ADD . /code/
 
-RUN cd /code/ && GOARCH=$(echo $TARGETPLATFORM | cut -f2 -d '/') make build
+RUN cd /code/ && make BUILD_PLATFORMS="linux $(echo $TARGETPLATFORM | cut -f2 -d '/')"
 
 FROM gcr.io/distroless/static:latest
 LABEL maintainers="Kubernetes Authors"
