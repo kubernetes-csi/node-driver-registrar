@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: build-% build container-% container push-% push clean test
+# Added push-multiarch to build and push multiarch image
+.PHONY: build-% build container-% container push-% push push-multiarch-% push-multiarch clean test
 
 # A space-separated list of all commands in the repository, must be
 # set in main Makefile of a repository.
@@ -52,6 +53,7 @@ IMAGE_TAGS+=$(shell tagged="$$(git describe --tags --match='v*' --abbrev=0)"; if
 
 # Images are named after the command contained in them.
 IMAGE_NAME=$(REGISTRY_NAME)/$*
+MULTIARCH_IMAGE_NAME=gcr.io/k8s-staging-csi/$*
 
 ifdef V
 # Adding "-alsologtostderr" assumes that all test binaries contain glog. This is not guaranteed.
@@ -68,6 +70,9 @@ endif
 # semicolon) builds for the default platform of the current Go
 # toolchain.
 BUILD_PLATFORMS =
+
+# To enable experimental features on the Docker daemon
+export DOCKER_CLI_EXPERIMENTAL:=enabled
 
 # This builds each command (= the sub-directories of ./cmd) for the target platform(s)
 # defined by BUILD_PLATFORMS.
@@ -101,9 +106,42 @@ push-%: container-%
 		fi; \
 	done
 
+RELEASE_ALIAS_TAG=$(PULL_BASE_REF)
+
+push-multiarch-%:
+	export DOCKER_CLI_EXPERIMENTAL=enabled
+	make BUILD_PLATFORMS="windows amd64 .exe"
+	gcloud auth configure-docker
+	docker buildx create --use --name multiarchimage-buildertest
+	set -ex; \
+	pushMultiArch () { \
+                tag=$$1  ;\
+                docker buildx build --push -t $(MULTIARCH_IMAGE_NAME):amd64-linux-$$tag --platform=linux/amd64 -f Dockerfile.multiarch . ;\
+                docker buildx build --push -t $(MULTIARCH_IMAGE_NAME):s390x-linux-$$tag --platform=linux/s390x -f Dockerfile.multiarch . ;\
+                docker buildx build --push -t $(MULTIARCH_IMAGE_NAME):amd64-windows-$$tag --platform=windows -f Dockerfile.Windows . ;\
+                docker manifest create --amend $(MULTIARCH_IMAGE_NAME):$$tag $(MULTIARCH_IMAGE_NAME):amd64-linux-$$tag \
+                        $(MULTIARCH_IMAGE_NAME):s390x-linux-$$tag \
+                        $(MULTIARCH_IMAGE_NAME):amd64-windows-$$tag ;\
+                docker manifest push -p $(MULTIARCH_IMAGE_NAME):$$tag ;\
+	}; \
+	if [ $(RELEASE_ALIAS_TAG) = "master" ]; then \
+                       : "creating or overwriting canary image"; \
+                       pushMultiArch canary ; \
+	elif echo $(RELEASE_ALIAS_TAG) | grep -q -e 'release-*' ; then \
+                       : "creating or overwriting canary image for release branch"; \
+                        release_canary_tag=$$(echo $(RELEASE_ALIAS_TAG) | cut -f2 -d '-')-canary ; \
+                        pushMultiArch $$release_canary_tag ; \
+ 	elif docker pull $(MULTIARCH_IMAGE_NAME):$(RELEASE_ALIAS_TAG) 2>&1 | tee /dev/stderr | grep -q "manifest for $(MULTIARCH_IMAGE_NAME):$(RELEASE_ALIAS_TAG) not found"; then \
+                       : "creating release image"; \
+                       pushMultiArch $(RELEASE_ALIAS_TAG) ;\
+	else \
+                       : "release image $(MULTIARCH_IMAGE_NAME):$(RELEASE_ALIAS_TAG) already exists, skipping push"; \
+	fi; \
+
 build: $(CMDS:%=build-%)
 container: $(CMDS:%=container-%)
 push: $(CMDS:%=push-%)
+push-multiarch: $(CMDS:%=push-multiarch-%)
 
 clean:
 	-rm -rf bin
