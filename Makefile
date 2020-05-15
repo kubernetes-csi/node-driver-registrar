@@ -19,11 +19,6 @@ all: build
 
 include release-tools/build.make
 
-# Override registry, revision and Images
-REV=$(REV_CI)
-REGISTRY_NAME=$(REGISTRY_CI)
-IMAGE_NAME=$(REGISTRY_NAME)/$*
-
 # This target builds multiarch images using Moby BuildKit builder toolkit.
 # Docker Buildx is included in Docker 19.03 and needs DOCKER_CLI_EXPERIMENTAL enabled to run corresponding commands.
 # Currently amd, s390x and Windows manifest is pushed for canary, release branch and released tags.
@@ -32,15 +27,14 @@ push-multiarch-%:
 	make BUILD_PLATFORMS="windows amd64 .exe"
 	set -ex; \
 	gcloud auth configure-docker; \
-	label_rev=v$$(echo $(REV) | cut -f3- -d 'v'); \
 	DOCKER_CLI_EXPERIMENTAL=enabled; \
 	export DOCKER_CLI_EXPERIMENTAL; \
 	docker buildx create --use --name multiarchimage-buildertest; \
 	pushMultiArch () { \
                 tag=$$1; \
-                docker buildx build --push -t $(IMAGE_NAME):amd64-linux-$$tag --platform=linux/amd64 -f $(shell if [ -e ./cmd/$*/Dockerfile.multiarch ]; then echo ./cmd/$*/Dockerfile.multiarch; else echo Dockerfile.multiarch; fi) --label revision=$$label_rev .; \
-                docker buildx build --push -t $(IMAGE_NAME):s390x-linux-$$tag --platform=linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile.multiarch ]; then echo ./cmd/$*/Dockerfile.multiarch; else echo Dockerfile.multiarch; fi) --label revision=$$label_rev .; \
-                docker buildx build --push -t $(IMAGE_NAME):amd64-windows-$$tag --platform=windows -f $(shell if [ -e ./cmd/$*/Dockerfile.Windows ]; then echo ./cmd/$*/Dockerfile.Windows; else echo Dockerfile.Windows; fi) --label revision=$$label_rev .; \
+                docker buildx build --push -t $(IMAGE_NAME):amd64-linux-$$tag --platform=linux/amd64 -f $(shell if [ -e ./cmd/$*/Dockerfile.multiarch ]; then echo ./cmd/$*/Dockerfile.multiarch; else echo Dockerfile.multiarch; fi) --label revision=$(REV) .; \
+                docker buildx build --push -t $(IMAGE_NAME):s390x-linux-$$tag --platform=linux/s390x -f $(shell if [ -e ./cmd/$*/Dockerfile.multiarch ]; then echo ./cmd/$*/Dockerfile.multiarch; else echo Dockerfile.multiarch; fi) --label revision=$(REV) .; \
+                docker buildx build --push -t $(IMAGE_NAME):amd64-windows-$$tag --platform=windows -f $(shell if [ -e ./cmd/$*/Dockerfile.Windows ]; then echo ./cmd/$*/Dockerfile.Windows; else echo Dockerfile.Windows; fi) --label revision=$(REV) .; \
                 docker manifest create --amend $(IMAGE_NAME):$$tag $(IMAGE_NAME):amd64-linux-$$tag \
                         $(IMAGE_NAME):s390x-linux-$$tag \
                         $(IMAGE_NAME):amd64-windows-$$tag; \
