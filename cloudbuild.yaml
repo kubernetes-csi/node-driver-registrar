@@ -8,13 +8,17 @@ options:
   substitution_option: ALLOW_LOOSE
 steps:
   - name: 'gcr.io/k8s-testimages/gcb-docker-gcloud:v20200421-a2bf5f8'
-    entrypoint: make
+    entrypoint: sh
     env:
     - PULL_BASE_REF=$_PULL_BASE_REF
     - HOME=/root
     args:
-    # Extract tag-n-hash value from _GIT_TAG(form vYYYYMMDD-tag-n-hash) for REV value
-    - push-multiarch REV=v$(echo $_GIT_TAG | cut -f3- -d 'v') REGISTRY_NAME=gcr.io/k8s-staging-csi
+    - -e
+    - -c
+    - |
+      gcloud auth configure-docker
+      # Extract tag-n-hash value from _GIT_TAG(form vYYYYMMDD-tag-n-hash) for REV value
+      make push-multiarch REV=v$(echo $_GIT_TAG | cut -f3- -d 'v') REGISTRY_NAME=gcr.io/k8s-staging-csi
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
