@@ -7,19 +7,18 @@ timeout: 1200s
 options:
   substitution_option: ALLOW_LOOSE
 steps:
+  # The image must contain bash and curl. Ideally it should also contain
+  # the desired version of Go (currently defined in release-tools/travis.yml),
+  # but that just speeds up the build and is not required.
   - name: 'gcr.io/k8s-testimages/gcb-docker-gcloud:v20200421-a2bf5f8'
     entrypoint: bash
     env:
-    - PULL_BASE_REF=$_PULL_BASE_REF
+    - GIT_TAG=${_GIT_TAG}
+    - PULL_BASE_REF=${_PULL_BASE_REF}
+    - STAGING_PROJECT=${_STAGING_PROJECT}
     - HOME=/root
     args:
-    - '-ex'
-    - '-c'
-    - |
-      gcloud auth configure-docker
-      # Extract tag-n-hash value from _GIT_TAG(form vYYYYMMDD-tag-n-hash) for REV value.
-      # Uses the default build platforms as defined in prow.sh.
-      make push-multiarch REV=v$(echo $_GIT_TAG | cut -f3- -d 'v') REGISTRY_NAME=gcr.io/k8s-staging-csi BUILD_PLATFORMS="$(set +x; source release-tools/prow.sh >/dev/null; echo "$CSI_PROW_BUILD_PLATFORMS")"
+    - .cloudbuild.sh
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
