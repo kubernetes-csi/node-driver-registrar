@@ -34,11 +34,7 @@ DOCKER_BUILDX_CREATE_ARGS ?=
 # BUILD_PLATFORMS determines which individual images are included in the multiarch image.
 # PULL_BASE_REF must be set to 'master', 'release-x.y', or a tag name, and determines
 # the tag for the resulting multiarch image.
-push-multiarch-%: build-%
-	if ! [ "$(PULL_BASE_REF)" ]; then \
-		echo >&2 "ERROR: PULL_BASE_REF must be set to 'master', 'release-x.y', or a tag name."; \
-		exit 1; \
-	fi
+push-multiarch-%: check-pull-base-ref build-%
 	set -ex; \
 	DOCKER_CLI_EXPERIMENTAL=enabled; \
 	export DOCKER_CLI_EXPERIMENTAL; \
@@ -76,5 +72,12 @@ push-multiarch-%: build-%
 	else \
 		       : "release image $(IMAGE_NAME):$(PULL_BASE_REF) already exists, skipping push"; \
 	fi; \
+
+.PHONY: check-pull-base-ref
+check-pull-base-ref:
+	if ! [ "$(PULL_BASE_REF)" ]; then \
+		echo >&2 "ERROR: PULL_BASE_REF must be set to 'master', 'release-x.y', or a tag name."; \
+		exit 1; \
+	fi
 
 push-multiarch: $(CMDS:%=push-multiarch-%)
