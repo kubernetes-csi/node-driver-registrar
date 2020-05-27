@@ -42,8 +42,7 @@ push-multiarch-%: check-pull-base-ref build-%
 	trap "docker buildx rm multiarchimage-buildertest" EXIT; \
 	dockerfile_linux=$$(if [ -e ./cmd/$*/Dockerfile ]; then echo ./cmd/$*/Dockerfile; else echo Dockerfile; fi); \
 	dockerfile_windows=$$(if [ -e ./cmd/$*/Dockerfile.Windows ]; then echo ./cmd/$*/Dockerfile.Windows; else echo Dockerfile.Windows; fi); \
-	build_platforms='$(BUILD_PLATFORMS)'; \
-	if ! [ "$$build_platforms" ]; then build_platforms="linux amd64"; fi; \
+	if [ '$(BUILD_PLATFORMS)' ]; then build_platforms='$(BUILD_PLATFORMS)'; else build_platforms="linux amd64"; fi; \
 	pushMultiArch () { \
 		tag=$$1; \
 		echo "$$build_platforms" | tr ';' '\n' | while read -r os arch suffix; do \
@@ -70,7 +69,8 @@ push-multiarch-%: check-pull-base-ref build-%
 		       : "creating release image"; \
 		       pushMultiArch $(PULL_BASE_REF); \
 	else \
-		       : "release image $(IMAGE_NAME):$(PULL_BASE_REF) already exists, skipping push"; \
+			: "ERROR: release image $(IMAGE_NAME):$(PULL_BASE_REF) already exists: a new tag is required!"; \
+			exit 1
 	fi; \
 
 .PHONY: check-pull-base-ref

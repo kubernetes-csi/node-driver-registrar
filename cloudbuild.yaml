@@ -15,7 +15,7 @@ steps:
     env:
     - GIT_TAG=${_GIT_TAG}
     - PULL_BASE_REF=${_PULL_BASE_REF}
-    - STAGING_PROJECT=${_STAGING_PROJECT}
+    - REGISTRY_NAME=gcr.io/${_STAGING_PROJECT}
     - HOME=/root
     args:
     - .cloudbuild.sh

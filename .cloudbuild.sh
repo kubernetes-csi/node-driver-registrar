@@ -11,4 +11,4 @@ gcloud auth configure-docker
 # Extract tag-n-hash value from GIT_TAG (form vYYYYMMDD-tag-n-hash) for REV value.
 REV=v$(echo $GIT_TAG | cut -f3- -d 'v')
 
-run_with_go "${CSI_PROW_GO_VERSION_BUILD}" make push-multiarch REV=${REV} REGISTRY_NAME=gcr.io/${STAGING_PROJECT} BUILD_PLATFORMS="${CSI_PROW_BUILD_PLATFORMS}"
+run_with_go "${CSI_PROW_GO_VERSION_BUILD}" make push-multiarch REV=${REV} REGISTRY_NAME=${REGISTRY_NAME} BUILD_PLATFORMS="${CSI_PROW_BUILD_PLATFORMS}"
