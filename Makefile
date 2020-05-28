@@ -70,7 +70,7 @@ push-multiarch-%: check-pull-base-ref build-%
 		       pushMultiArch $(PULL_BASE_REF); \
 	else \
 			: "ERROR: release image $(IMAGE_NAME):$(PULL_BASE_REF) already exists: a new tag is required!"; \
-			exit 1
+			exit 1; \
 	fi; \
 
 .PHONY: check-pull-base-ref
