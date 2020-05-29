@@ -1064,18 +1064,24 @@ main () {
                 # always pulling the image
                 # (https://github.com/kubernetes-sigs/kind/issues/328).
                 docker tag "$i:latest" "$i:csiprow" || die "tagging the locally built container image for $i failed"
-            done
 
-            if [ -e deploy/kubernetes/rbac.yaml ]; then
-                # This is one of those components which has its own RBAC rules (like external-provisioner).
-                # We are testing a locally built image and also want to test with the the current,
-                # potentially modified RBAC rules.
-                if [ "$(echo "$cmds" | wc -w)" != 1 ]; then
-                    die "ambiguous deploy/kubernetes/rbac.yaml: need exactly one command, got: $cmds"
+                # For components with multiple cmds, the RBAC file should be in the following format:
+                #   rbac-$cmd.yaml
+                # If this file cannot be found, we can default to the standard location:
+                #   deploy/kubernetes/rbac.yaml
+                rbac_file_path=$(find . -type f -name "rbac-$i.yaml")
+                if [ "$rbac_file_path" == "" ]; then
+                    rbac_file_path="$(pwd)/deploy/kubernetes/rbac.yaml"
                 fi
-                e=$(echo "$cmds" | tr '[:lower:]' '[:upper:]' | tr - _)
-                images="$images ${e}_RBAC=$(pwd)/deploy/kubernetes/rbac.yaml"
-            fi
+                
+                if [ -e "$rbac_file_path" ]; then
+                    # This is one of those components which has its own RBAC rules (like external-provisioner).
+                    # We are testing a locally built image and also want to test with the the current,
+                    # potentially modified RBAC rules.
+                    e=$(echo "$i" | tr '[:lower:]' '[:upper:]' | tr - _)
+                    images="$images ${e}_RBAC=$rbac_file_path"
+                fi
+            done
         fi
 
         if tests_need_non_alpha_cluster; then
@@ -1182,4 +1188,18 @@ main () {
     fi
 
     return "$ret"
+}
+
+# This function can be called by a repo's top-level cloudbuild.sh:
+# it handles environment set up in the GCR cloud build and then
+# invokes "make push-multiarch" to do the actual image building.
+gcr_cloud_build () {
+    # Register gcloud as a Docker credential helper.
+    # Required for "docker buildx build --push".
+    gcloud auth configure-docker
+
+    # Extract tag-n-hash value from GIT_TAG (form vYYYYMMDD-tag-n-hash) for REV value.
+    REV=v$(echo "$GIT_TAG" | cut -f3- -d 'v')
+
+    run_with_go "${CSI_PROW_GO_VERSION_BUILD}" make push-multiarch REV="${REV}" REGISTRY_NAME="${REGISTRY_NAME}" BUILD_PLATFORMS="${CSI_PROW_BUILD_PLATFORMS}"
 }
