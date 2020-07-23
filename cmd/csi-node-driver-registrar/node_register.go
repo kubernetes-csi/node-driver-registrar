@@ -75,7 +75,7 @@ func nodeRegister(
 }
 
 func buildSocketPath(csiDriverName string) string {
-	return fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
+	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
 }
 
 func removeRegSocket(csiDriverName string) {
