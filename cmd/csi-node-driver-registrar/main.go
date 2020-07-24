@@ -24,10 +24,10 @@ import (
 	"time"
 
 	"k8s.io/klog"
-	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
 	csirpc "github.com/kubernetes-csi/csi-lib-utils/rpc"
+	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
 const (
