@@ -3,6 +3,12 @@
 [Documentation](https://kubernetes-csi.github.io/docs/)
 # Changelog since v1.3.0
 
+## Urgent Upgrade Notes 
+
+### (No, really, you MUST read this before you upgrade)
+
+- Use v1 API for plugin registration with kubelet. This change requires at least Kubernetes v1.13. ([#96](https://github.com/kubernetes-csi/node-driver-registrar/pull/96), [@gnufied](https://github.com/gnufied))
+ 
 ## Changes by Kind
 
 ### Feature
@@ -13,6 +19,7 @@
 
 - Make image, tag and registry configurable in docker file for windows build of node driver registrar. ([#77](https://github.com/kubernetes-csi/node-driver-registrar/pull/77), [@jingxu97](https://github.com/jingxu97))
 - Use v1 API for plugin registration with kubelet ([#96](https://github.com/kubernetes-csi/node-driver-registrar/pull/96), [@gnufied](https://github.com/gnufied))
+- Registration socket is now removed on node-driver-registrar shutdown, de-registering the CSI driver from kubelet. ([#61](https://github.com/kubernetes-csi/node-driver-registrar/pull/61), [@Madhu-1](https://github.com/Madhu-1))
 
 ## Dependencies
 
