@@ -19,9 +19,11 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 	"syscall"
 
 	"google.golang.org/grpc"
@@ -64,6 +66,7 @@ func nodeRegister(
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
+	go healthzServer(socketPath, *healthzPort)
 	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
@@ -76,6 +79,33 @@ func nodeRegister(
 
 func buildSocketPath(csiDriverName string) string {
 	return fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
+}
+
+func healthzServer(socketPath string, port int) {
+	if port <= 0 {
+		klog.Infof("Skipping healthz server because port set to: %v", port)
+		return
+	}
+	klog.Infof("Starting healthz server on port: %v\n", port)
+
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
+		socketExists, err := util.DoesSocketExist(socketPath)
+		if err == nil && socketExists {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`ok`))
+			klog.V(5).Infof("health check succeeded")
+		} else if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			klog.Errorf("health check failed: %+v", err)
+		} else if !socketExists {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("registration socket does not exist"))
+			klog.Errorf("health check failed, registration socket does not exist")
+		}
+	})
+
+	klog.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
 
 func removeRegSocket(csiDriverName string) {

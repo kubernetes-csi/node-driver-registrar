@@ -47,6 +47,7 @@ var (
 	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
+	healthzPort             = flag.Int("health-port", 0, "TCP port for healthz requests. Set to 0 to disable the healthz server.")
 	showVersion             = flag.Bool("version", false, "Show version.")
 	version                 = "unknown"
 
