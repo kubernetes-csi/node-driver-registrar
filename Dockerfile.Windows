@@ -3,7 +3,7 @@ ARG BASE_IMAGE_TAG=1809
 ARG REGISTRY=mcr.microsoft.com/windows
 
 FROM ${REGISTRY}/${BASE_IMAGE}:${BASE_IMAGE_TAG} as core
-FROM mcr.microsoft.com/windows/nanoserver:1809
+FROM mcr.microsoft.com/windows/nanoserver:${BASE_IMAGE_TAG}
 LABEL description="CSI Node driver registrar"
 
 COPY ./bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
