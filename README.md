@@ -50,6 +50,12 @@ There are two UNIX domain sockets used by the node-driver-registrar:
   `/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock). Note this is NOT
   the path to the registration socket.
 
+### Optional arguments
+
+* `--health-port`: This is the port of the health check server for the node-driver-registrar,
+  which checks if the registration socket exists. A value <= 0 disables the server.
+  Server is disabled by default.
+
 ### Required permissions
 
 The node-driver-registrar does not interact with the Kubernetes API, so no RBAC
@@ -76,11 +82,21 @@ the actual driver's name.
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
+            - "--health-port=9809"
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
+          ports:
+            - containerPort: 9809
+              name: healthz
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
       volumes:
         - name: registration-dir
           hostPath:

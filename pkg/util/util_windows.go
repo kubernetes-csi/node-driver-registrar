@@ -29,19 +29,27 @@ func Umask(mask int) (int, error) {
 }
 
 func CleanupSocketFile(socketPath string) error {
-	if _, err := os.Lstat(socketPath); err != nil {
-		// If the file does not exist, then the cleanup can be considered successful.
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return fmt.Errorf("failed to lstat the socket %s with error: %+v", socketPath, err)
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		return err
 	}
+	if socketExists {
+		if err := os.Remove(socketPath); err != nil {
+			return fmt.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
+		}
+	}
+	return nil
+}
 
+func DoesSocketExist(socketPath string) (bool, error) {
 	// TODO: Until the bug - https://github.com/golang/go/issues/33357 is fixed, os.stat wouldn't return the
 	// right mode(socket) on windows. Hence deleting the file, without checking whether
 	// its a socket, on windows.
-	if err := os.Remove(socketPath); err != nil {
-		return fmt.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
+	if _, err := os.Lstat(socketPath); err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to lstat the socket %s with error: %+v", socketPath, err)
 	}
-	return nil
+	return true, nil
 }
