@@ -72,7 +72,7 @@ the actual driver's name.
 ```bash
       containers:
         - name: csi-driver-registrar
-          image: quay.io/k8scsi/csi-node-driver-registrar:v1.0.2
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
