@@ -15,9 +15,9 @@ the CSI calls on.
 
 This information reflects the head of this branch.
 
-| Compatible with CSI Version                                                                | Container Image                                 | Min K8s Version |
-| ------------------------------------------------------------------------------------------ | ----------------------------------------------- | --------------- |
-| [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | quay.io/k8scsi/csi-node-driver-registrar        | 1.13            |
+| Compatible with CSI Version                                                                | Container Image                                         | [Min K8s Version](https://kubernetes-csi.github.io/docs/kubernetes-compatibility.html#minimum-version) |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------- | --------------- |
+| [CSI Spec v1.0.0](https://github.com/container-storage-interface/spec/releases/tag/v1.0.0) | k8s.gcr.io/sig-storage/csi-node-driver-registrar        | 1.13            |
 
 For release-0.4 and below, please refer to the [driver-registrar
 repository](https://github.com/kubernetes-csi/driver-registrar).
@@ -76,10 +76,6 @@ the actual driver's name.
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "rm -rf /registration/<plugin> /registration/<drivername.example.com>-reg.sock"]
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi

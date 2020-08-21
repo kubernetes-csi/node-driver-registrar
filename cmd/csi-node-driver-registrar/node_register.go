@@ -20,13 +20,15 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog"
-	registerapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1alpha1"
+	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
 func nodeRegister(
@@ -36,7 +38,7 @@ func nodeRegister(
 	// as gRPC server which replies to registration requests initiated by kubelet's
 	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
 	registrar := newRegistrationServer(csiDriverName, *kubeletRegistrationPath, supportedVersions)
-	socketPath := fmt.Sprintf("/registration/%s-reg.sock", csiDriverName)
+	socketPath := buildSocketPath(csiDriverName)
 	if err := util.CleanupSocketFile(socketPath); err != nil {
 		klog.Errorf("%+v", err)
 		os.Exit(1)
@@ -62,11 +64,29 @@ func nodeRegister(
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
+	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
 		klog.Errorf("Registration Server stopped serving: %v", err)
 		os.Exit(1)
 	}
 	// If gRPC server is gracefully shutdown, exit
+	os.Exit(0)
+}
+
+func buildSocketPath(csiDriverName string) string {
+	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
+}
+
+func removeRegSocket(csiDriverName string) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGTERM)
+	<-sigc
+	socketPath := buildSocketPath(csiDriverName)
+	err := os.Remove(socketPath)
+	if err != nil && !os.IsNotExist(err) {
+		klog.Errorf("failed to remove socket: %s with error: %+v", socketPath, err)
+		os.Exit(1)
+	}
 	os.Exit(0)
 }
