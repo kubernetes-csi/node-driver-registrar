@@ -1,6 +1,7 @@
 # Release notes for v2.0
 
 [Documentation](https://kubernetes-csi.github.io/docs/)
+
 # Changelog since v1.3.0
 
 ## Urgent Upgrade Notes 
@@ -13,13 +14,19 @@
 
 ### Feature
 
-- Windows and multiarch Linux images are now available. The Dockerfile must accept a "binary" build argument. ([#84](https://github.com/kubernetes-csi/node-driver-registrar/pull/84), [@pohly](https://github.com/pohly))
+- Adds a new flag --health-port. This is the port of the health check server for the node-driver-registrar, which checks if the registration socket exists. A value <= 0 disables the server. Server is disabled by default. ([#99](https://github.com/kubernetes-csi/node-driver-registrar/pull/99), [@chrishenzie](https://github.com/chrishenzie))
+- Windows and multiarch Linux images are now available.
+  The Dockerfile must accept a "binary" build argument. ([#84](https://github.com/kubernetes-csi/node-driver-registrar/pull/84), [@pohly](https://github.com/pohly))
+
+### Bug or Regression
+
+- Registration socket is removed on node-driver-registrar shutdown, de-registering the CSI driver from kubelet. ([#61](https://github.com/kubernetes-csi/node-driver-registrar/pull/61), [@Madhu-1](https://github.com/Madhu-1))
 
 ### Uncategorized
 
+- Build with Go 1.15 ([#102](https://github.com/kubernetes-csi/node-driver-registrar/pull/102), [@pohly](https://github.com/pohly))
 - Make image, tag and registry configurable in docker file for windows build of node driver registrar. ([#77](https://github.com/kubernetes-csi/node-driver-registrar/pull/77), [@jingxu97](https://github.com/jingxu97))
-- Use v1 API for plugin registration with kubelet ([#96](https://github.com/kubernetes-csi/node-driver-registrar/pull/96), [@gnufied](https://github.com/gnufied))
-- Registration socket is now removed on node-driver-registrar shutdown, de-registering the CSI driver from kubelet. ([#61](https://github.com/kubernetes-csi/node-driver-registrar/pull/61), [@Madhu-1](https://github.com/Madhu-1))
+- The addition of the --plugin-registration-path flag allows users to dynamically configure the registration path; this flag defaults to the currently hardcoded value of `/registration` so actions can be taken to consume this change but is not required ([#95](https://github.com/kubernetes-csi/node-driver-registrar/pull/95), [@prithviramesh](https://github.com/prithviramesh))
 
 ## Dependencies
 
@@ -166,6 +173,7 @@
 - google.golang.org/grpc: v1.10.0 → v1.27.0
 - gopkg.in/check.v1: 20d25e2 → 41f04d3
 - gopkg.in/yaml.v2: v2.2.2 → v2.2.8
+- k8s.io/client-go: v11.0.0+incompatible → v0.19.0-rc.2
 - k8s.io/klog: v0.1.0 → v1.0.0
 
 ### Removed
