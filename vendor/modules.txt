@@ -1,4 +1,4 @@
-# github.com/container-storage-interface/spec v1.0.0
+# github.com/container-storage-interface/spec v1.3.0
 github.com/container-storage-interface/spec/lib/go/csi
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/gogoproto
@@ -17,7 +17,7 @@ github.com/golang/protobuf/ptypes/wrappers
 github.com/kubernetes-csi/csi-lib-utils/connection
 github.com/kubernetes-csi/csi-lib-utils/protosanitizer
 github.com/kubernetes-csi/csi-lib-utils/rpc
-# golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
+# golang.org/x/net v0.0.0-20200707034311-ab3426394381
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -106,9 +106,9 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
-# k8s.io/client-go v0.19.0-rc.2
+# k8s.io/client-go v0.19.0
 k8s.io/client-go/util/testing
 # k8s.io/klog v1.0.0
 k8s.io/klog
-# k8s.io/kubelet v0.19.0-rc.2
+# k8s.io/kubelet v0.19.0
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
