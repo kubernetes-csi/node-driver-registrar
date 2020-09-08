@@ -48,6 +48,7 @@ var (
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
 	pluginRegistrationPath  = flag.String("plugin-registration-path", "/registration", "Path to Kubernetes plugin registration directory.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
+	healthzPort             = flag.Int("health-port", 0, "TCP port for healthz requests. Set to 0 to disable the healthz server.")
 	showVersion             = flag.Bool("version", false, "Show version.")
 	version                 = "unknown"
 

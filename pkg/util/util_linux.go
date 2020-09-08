@@ -30,15 +30,25 @@ func Umask(mask int) (int, error) {
 }
 
 func CleanupSocketFile(socketPath string) error {
-	fi, err := os.Stat(socketPath)
-	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
-		// Remove any socket, stale or not, but fall through for other files
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		return err
+	}
+	if socketExists {
 		if err := os.Remove(socketPath); err != nil {
 			return fmt.Errorf("failed to remove stale socket %s with error: %+v", socketPath, err)
 		}
 	}
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
-	}
 	return nil
+}
+
+func DoesSocketExist(socketPath string) (bool, error) {
+	fi, err := os.Stat(socketPath)
+	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
+		return true, nil
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return false, fmt.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
+	}
+	return false, nil
 }
