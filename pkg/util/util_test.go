@@ -37,7 +37,15 @@ func TestSocketFileDoesNotExist(t *testing.T) {
 		t.Fatalf("could not create temp dir: %v", err)
 	}
 	defer os.RemoveAll(testDir)
+
 	socketPath := filepath.Join(testDir, socketFileName)
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		t.Fatalf("check for existence returned error: %+v", err)
+	}
+	if socketExists {
+		t.Fatalf("socket exists when it should not")
+	}
 	// Negative test, file is not created. So file name in current path used.
 	err = CleanupSocketFile(socketPath)
 	if err != nil {
@@ -56,6 +64,13 @@ func TestSocketPathDoesNotExist(t *testing.T) {
 	os.RemoveAll(testDir)
 
 	socketPath := filepath.Join(testDir, socketFileName)
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		t.Fatalf("check for existence returned error: %+v", err)
+	}
+	if socketExists {
+		t.Fatalf("socket exists when it should not")
+	}
 	err = CleanupSocketFile(socketPath)
 	if err != nil {
 		t.Fatalf("cleanup returned error: %+v", err)
@@ -77,6 +92,14 @@ func TestSocketPathSimple(t *testing.T) {
 	if err != nil {
 		klog.Errorf("failed to listen on socket: %s with error: %+v", socketPath, err)
 		os.Exit(1)
+	}
+
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		t.Fatalf("check for existence returned error: %+v", err)
+	}
+	if !socketExists {
+		t.Fatalf("socket does not exist when it should")
 	}
 
 	err = CleanupSocketFile(socketPath)
@@ -109,6 +132,19 @@ func TestSocketRegularFile(t *testing.T) {
 		t.Fatalf("create file failed: %s", socketPath)
 	}
 	f.Close()
+
+	socketExists, err := DoesSocketExist(socketPath)
+	if err != nil {
+		t.Fatalf("check for existence returned error: %+v", err)
+	}
+	// See comments in CleanupSocketFile for differences in windows and linux behavior checking for sockets.
+	if runtime.GOOS == "windows" {
+		if !socketExists {
+			t.Fatalf("socket does not exist when it should")
+		}
+	} else if socketExists {
+		t.Fatalf("socket exists when it should not")
+	}
 
 	err = CleanupSocketFile(socketPath)
 	if err != nil {

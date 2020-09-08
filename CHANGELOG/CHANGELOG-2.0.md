@@ -1,6 +1,30 @@
+# Release notes for v2.0.1
+
+[Documentation](https://kubernetes-csi.github.io/docs/)
+
+# Changelog since v2.0.0
+
+## Changes by Kind
+
+### Uncategorized
+
+- Update image and tag names for Windows to have separate parameters for nanoserver and servercore ([#111](https://github.com/kubernetes-csi/node-driver-registrar/pull/111), [@jingxu97](https://github.com/jingxu97))
+
+## Dependencies
+
+### Added
+_Nothing has changed._
+
+### Changed
+_Nothing has changed._
+
+### Removed
+_Nothing has changed._
+
 # Release notes for v2.0
 
 [Documentation](https://kubernetes-csi.github.io/docs/)
+
 # Changelog since v1.3.0
 
 ## Urgent Upgrade Notes 
@@ -13,13 +37,20 @@
 
 ### Feature
 
-- Windows and multiarch Linux images are now available. The Dockerfile must accept a "binary" build argument. ([#84](https://github.com/kubernetes-csi/node-driver-registrar/pull/84), [@pohly](https://github.com/pohly))
+- Adds a new flag --health-port. This is the port of the health check server for the node-driver-registrar, which checks if the registration socket exists. A value <= 0 disables the server. Server is disabled by default. ([#99](https://github.com/kubernetes-csi/node-driver-registrar/pull/99), [@chrishenzie](https://github.com/chrishenzie))
+- Windows and multiarch Linux images are now available.
+  The Dockerfile must accept a "binary" build argument. ([#84](https://github.com/kubernetes-csi/node-driver-registrar/pull/84), [@pohly](https://github.com/pohly))
+
+### Bug or Regression
+
+- Registration socket is removed on node-driver-registrar shutdown, de-registering the CSI driver from kubelet. ([#61](https://github.com/kubernetes-csi/node-driver-registrar/pull/61), [@Madhu-1](https://github.com/Madhu-1))
 
 ### Uncategorized
 
+- Build with Go 1.15 ([#102](https://github.com/kubernetes-csi/node-driver-registrar/pull/102), [@pohly](https://github.com/pohly))
 - Make image, tag and registry configurable in docker file for windows build of node driver registrar. ([#77](https://github.com/kubernetes-csi/node-driver-registrar/pull/77), [@jingxu97](https://github.com/jingxu97))
-- Use v1 API for plugin registration with kubelet ([#96](https://github.com/kubernetes-csi/node-driver-registrar/pull/96), [@gnufied](https://github.com/gnufied))
-- Registration socket is now removed on node-driver-registrar shutdown, de-registering the CSI driver from kubelet. ([#61](https://github.com/kubernetes-csi/node-driver-registrar/pull/61), [@Madhu-1](https://github.com/Madhu-1))
+- Make nanoserver tag configurable ([#101](https://github.com/kubernetes-csi/node-driver-registrar/pull/101), [@mainred](https://github.com/mainred))
+- The addition of the --plugin-registration-path flag allows users to dynamically configure the registration path; this flag defaults to the currently hardcoded value of `/registration` so actions can be taken to consume this change but is not required ([#95](https://github.com/kubernetes-csi/node-driver-registrar/pull/95), [@prithviramesh](https://github.com/prithviramesh))
 
 ## Dependencies
 
@@ -59,7 +90,7 @@
 - github.com/emicklei/go-restful: [ff4f55a](https://github.com/emicklei/go-restful/tree/ff4f55a)
 - github.com/envoyproxy/go-control-plane: [5f8ba28](https://github.com/envoyproxy/go-control-plane/tree/5f8ba28)
 - github.com/envoyproxy/protoc-gen-validate: [v0.1.0](https://github.com/envoyproxy/protoc-gen-validate/tree/v0.1.0)
-- github.com/evanphx/json-patch: [e83c0a1](https://github.com/evanphx/json-patch/tree/e83c0a1)
+- github.com/evanphx/json-patch: [v4.9.0+incompatible](https://github.com/evanphx/json-patch/tree/v4.9.0)
 - github.com/fsnotify/fsnotify: [v1.4.9](https://github.com/fsnotify/fsnotify/tree/v1.4.9)
 - github.com/ghodss/yaml: [73d445a](https://github.com/ghodss/yaml/tree/73d445a)
 - github.com/go-gl/glfw/v3.3/glfw: [12ad95a](https://github.com/go-gl/glfw/v3.3/glfw/tree/12ad95a)
@@ -121,7 +152,7 @@
 - go.uber.org/atomic: v1.4.0
 - go.uber.org/multierr: v1.1.0
 - go.uber.org/zap: v1.10.0
-- golang.org/x/crypto: bac4c82
+- golang.org/x/crypto: 75b2880
 - golang.org/x/exp: da58074
 - golang.org/x/image: cff245a
 - golang.org/x/lint: fdd1cda
@@ -142,30 +173,32 @@
 - gotest.tools/v3: v3.0.2
 - gotest.tools: v2.2.0+incompatible
 - honnef.co/go/tools: v0.0.1-2019.2.3
-- k8s.io/api: v0.19.0-rc.2
-- k8s.io/apimachinery: v0.19.0-rc.2
-- k8s.io/component-base: v0.19.0-rc.2
+- k8s.io/api: v0.19.0
+- k8s.io/apimachinery: v0.19.0
+- k8s.io/component-base: v0.19.0
 - k8s.io/gengo: 3a45101
 - k8s.io/klog/v2: v2.2.0
-- k8s.io/kube-openapi: 656914f
-- k8s.io/kubelet: v0.19.0-rc.2
-- k8s.io/utils: 0bdb4ca
+- k8s.io/kube-openapi: 6aeccd4
+- k8s.io/kubelet: v0.19.0
+- k8s.io/utils: d5654de
 - rsc.io/binaryregexp: v0.2.0
-- sigs.k8s.io/structured-merge-diff/v3: 43c19bb
+- sigs.k8s.io/structured-merge-diff/v4: v4.0.1
 - sigs.k8s.io/yaml: v1.2.0
 
 ### Changed
+- github.com/container-storage-interface/spec: [v1.0.0 → v1.3.0](https://github.com/container-storage-interface/spec/compare/v1.0.0...v1.3.0)
 - github.com/davecgh/go-spew: [v1.1.0 → v1.1.1](https://github.com/davecgh/go-spew/compare/v1.1.0...v1.1.1)
 - github.com/gogo/protobuf: [v1.0.0 → v1.3.1](https://github.com/gogo/protobuf/compare/v1.0.0...v1.3.1)
 - github.com/golang/protobuf: [v1.1.0 → v1.4.2](https://github.com/golang/protobuf/compare/v1.1.0...v1.4.2)
 - github.com/stretchr/objx: [v0.1.0 → v0.1.1](https://github.com/stretchr/objx/compare/v0.1.0...v0.1.1)
-- golang.org/x/net: 22ae77b → d3edc99
+- golang.org/x/net: 22ae77b → ab34263
 - golang.org/x/sys: dd2ff4a → ed371f2
 - golang.org/x/text: v0.3.0 → v0.3.3
 - google.golang.org/genproto: 2c5e7ac → cb27e3a
 - google.golang.org/grpc: v1.10.0 → v1.27.0
 - gopkg.in/check.v1: 20d25e2 → 41f04d3
 - gopkg.in/yaml.v2: v2.2.2 → v2.2.8
+- k8s.io/client-go: v11.0.0+incompatible → v0.19.0
 - k8s.io/klog: v0.1.0 → v1.0.0
 
 ### Removed
