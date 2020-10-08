@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/static:latest
+FROM gcr.io/distroless/static:latest-amd64
 LABEL maintainers="Kubernetes Authors"
 LABEL description="CSI Node driver registrar"
 ARG binary=./bin/csi-node-driver-registrar
