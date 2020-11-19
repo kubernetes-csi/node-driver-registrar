@@ -29,7 +29,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 

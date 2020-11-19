@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	utiltesting "k8s.io/client-go/util/testing"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var socketFileName = "reg.sock"
