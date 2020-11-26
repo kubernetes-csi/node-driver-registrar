@@ -37,9 +37,6 @@ const (
 	// names
 	annotationKey = "csi.volume.kubernetes.io/nodeid"
 
-	// Default timeout of short CSI calls like GetPluginInfo
-	csiTimeout = time.Second
-
 	// Verify (and update, if needed) the node ID at this frequency.
 	sleepDuration = 2 * time.Minute
 )
@@ -47,6 +44,7 @@ const (
 // Command line flags
 var (
 	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
+	operationTimeout        = flag.Duration("timeout", time.Second, "Timeout for waiting for communication with driver")
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
 	pluginRegistrationPath  = flag.String("plugin-registration-path", "/registration", "Path to Kubernetes plugin registration directory.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
@@ -144,7 +142,7 @@ func main() {
 	}
 
 	klog.V(1).Infof("Calling CSI driver to discover driver name")
-	ctx, cancel := context.WithTimeout(context.Background(), csiTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
 	defer cancel()
 
 	csiDriverName, err := csirpc.GetDriverName(ctx, csiConn)
