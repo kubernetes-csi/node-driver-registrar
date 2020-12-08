@@ -134,8 +134,8 @@ func TestSocketRegularFile(t *testing.T) {
 	f.Close()
 
 	socketExists, err := DoesSocketExist(socketPath)
-	if err != nil {
-		t.Fatalf("check for existence returned error: %+v", err)
+	if err == nil && runtime.GOOS != "windows" {
+		t.Fatalf("check for existence should returned error on linux: %+v", err)
 	}
 	// See comments in CleanupSocketFile for differences in windows and linux behavior checking for sockets.
 	if runtime.GOOS == "windows" {
@@ -147,8 +147,8 @@ func TestSocketRegularFile(t *testing.T) {
 	}
 
 	err = CleanupSocketFile(socketPath)
-	if err != nil {
-		t.Fatalf("cleanup returned error: %+v", err)
+	if err == nil && runtime.GOOS != "windows" {
+		t.Fatalf("cleanup returned should return error on linux: %+v", err)
 	}
 
 	if runtime.GOOS == "windows" {
