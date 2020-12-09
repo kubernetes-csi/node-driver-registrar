@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
@@ -49,7 +50,8 @@ var (
 	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
 	pluginRegistrationPath  = flag.String("plugin-registration-path", "/registration", "Path to Kubernetes plugin registration directory.")
 	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
-	healthzPort             = flag.Int("health-port", 0, "TCP port for healthz requests. Set to 0 to disable the healthz server.")
+	healthzPort             = flag.Int("health-port", 0, "(deprecated) TCP port for healthz requests. Set to 0 to disable the healthz server. Only one of `--health-port` and `--http-endpoint` can be set.")
+	httpEndpoint            = flag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
 	showVersion             = flag.Bool("version", false, "Show version.")
 	version                 = "unknown"
 
@@ -112,6 +114,17 @@ func main() {
 	}
 	klog.Infof("Version: %s", version)
 
+	if *healthzPort > 0 && *httpEndpoint != "" {
+		klog.Error("only one of `--health-port` and `--http-endpoint` can be set.")
+		os.Exit(1)
+	}
+	var addr string
+	if *healthzPort > 0 {
+		addr = ":" + strconv.Itoa(*healthzPort)
+	} else {
+		addr = *httpEndpoint
+	}
+
 	if *connectionTimeout != 0 {
 		klog.Warning("--connection-timeout is deprecated and will have no effect")
 	}
@@ -144,5 +157,5 @@ func main() {
 	cmm.SetDriverName(csiDriverName)
 
 	// Run forever
-	nodeRegister(csiDriverName)
+	nodeRegister(csiDriverName, addr)
 }
