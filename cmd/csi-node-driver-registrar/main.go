@@ -18,13 +18,15 @@ package main
 
 import (
 	"context"
-	"flag"
+	goflag "flag"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
+	"github.com/spf13/pflag"
+	"k8s.io/component-base/logs"
 	"k8s.io/klog/v2"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
@@ -46,13 +48,13 @@ const (
 
 // Command line flags
 var (
-	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
-	csiAddress              = flag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
-	pluginRegistrationPath  = flag.String("plugin-registration-path", "/registration", "Path to Kubernetes plugin registration directory.")
-	kubeletRegistrationPath = flag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
-	healthzPort             = flag.Int("health-port", 0, "(deprecated) TCP port for healthz requests. Set to 0 to disable the healthz server. Only one of `--health-port` and `--http-endpoint` can be set.")
-	httpEndpoint            = flag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
-	showVersion             = flag.Bool("version", false, "Show version.")
+	connectionTimeout       = pflag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
+	csiAddress              = pflag.String("csi-address", "/run/csi/socket", "Path of the CSI driver socket that the node-driver-registrar will connect to.")
+	pluginRegistrationPath  = pflag.String("plugin-registration-path", "/registration", "Path to Kubernetes plugin registration directory.")
+	kubeletRegistrationPath = pflag.String("kubelet-registration-path", "", "Path of the CSI driver socket on the Kubernetes host machine.")
+	healthzPort             = pflag.Int("health-port", 0, "(deprecated) TCP port for healthz requests. Set to 0 to disable the healthz server. Only one of `--health-port` and `--http-endpoint` can be set.")
+	httpEndpoint            = pflag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
+	showVersion             = pflag.Bool("version", false, "Show version.")
 	version                 = "unknown"
 
 	// List of supported versions
@@ -99,9 +101,18 @@ func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status
 }
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("logtostderr", "true")
-	flag.Parse()
+	logs.InitLogs()
+	defer logs.FlushLogs()
+
+	logOptions := logs.NewOptions()
+	logOptions.AddFlags(pflag.CommandLine)
+
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+	pflag.Set("logtostderr", "true")
+	pflag.Parse()
+
+	// set log formatter type
+	logOptions.Apply()
 
 	if *kubeletRegistrationPath == "" {
 		klog.Error("kubelet-registration-path is a required parameter")
