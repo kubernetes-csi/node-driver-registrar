@@ -60,6 +60,8 @@ There are two UNIX domain sockets used by the node-driver-registrar:
   node-driver-registrar, which checks if the registration socket exists. A value <= 0 disables
   the server. Server is disabled by default.
 
+* `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
+
 ### Required permissions
 
 The node-driver-registrar does not interact with the Kubernetes API, so no RBAC
