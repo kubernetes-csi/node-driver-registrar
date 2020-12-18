@@ -5,10 +5,12 @@
 
 ## Changes by Kind
 
+### Deprecations
+- `health-port` flag is deprecated and replaced by `http-endpoint`. ([#125](https://github.com/kubernetes-csi/node-driver-registrar/pull/125), [@verult](https://github.com/verult))
+
 ### Feature
 
 - Added --timeout parameter for the unlikely case that a driver's GetPluginInfo call is slower than one second ([#124](https://github.com/kubernetes-csi/node-driver-registrar/pull/124), [@pohly](https://github.com/pohly))
-- `health-port` flag is deprecated and replaced by `http-endpoint`. ([#125](https://github.com/kubernetes-csi/node-driver-registrar/pull/125), [@verult](https://github.com/verult))
 
 ### Bug or Regression
 
