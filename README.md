@@ -52,9 +52,15 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 
 ### Optional arguments
 
-* `--health-port`: This is the port of the health check server for the node-driver-registrar,
-  which checks if the registration socket exists. A value <= 0 disables the server.
-  Server is disabled by default.
+* `--http-endpoint`: "The TCP network address where the HTTP server for diagnostics, including
+  the health check indicating whether the registration socket exists, will listen (example:
+  `:8080`). The default is empty string, which means the server is disabled.
+
+* `--health-port`: (deprecated) This is the port of the health check server for the
+  node-driver-registrar, which checks if the registration socket exists. A value <= 0 disables
+  the server. Server is disabled by default.
+
+* `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
 
 ### Required permissions
 
@@ -69,6 +75,11 @@ permissions to:
     contain (via the CSI `GetPluginInfo()` call).
 * Access the registration socket (typically in `/var/lib/kubelet/plugins_registry/`).
   * Used by the `node-driver-registrar` to register the driver with kubelet.
+
+### Health Check
+
+If `--http-endpoint` is set, the node-driver-registrar exposes a health check endpoint at the
+specified address and the path `/healthz`, indicating whether the registration socket exists.
 
 ### Example
 

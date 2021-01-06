@@ -23,19 +23,16 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"strconv"
 	"syscall"
 
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
-func nodeRegister(
-	csiDriverName string,
-) {
+func nodeRegister(csiDriverName, httpEndpoint string) {
 	// When kubeletRegistrationPath is specified then driver-registrar ONLY acts
 	// as gRPC server which replies to registration requests initiated by kubelet's
 	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
@@ -66,7 +63,7 @@ func nodeRegister(
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
-	go healthzServer(socketPath, *healthzPort)
+	go healthzServer(socketPath, httpEndpoint)
 	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
@@ -81,12 +78,12 @@ func buildSocketPath(csiDriverName string) string {
 	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
 }
 
-func healthzServer(socketPath string, port int) {
-	if port <= 0 {
-		klog.Infof("Skipping healthz server because port set to: %v", port)
+func healthzServer(socketPath string, httpEndpoint string) {
+	if httpEndpoint == "" {
+		klog.Infof("Skipping healthz server because HTTP endpoint is set to: %q", httpEndpoint)
 		return
 	}
-	klog.Infof("Starting healthz server on port: %v\n", port)
+	klog.Infof("Starting healthz server at HTTP endpoint: %v\n", httpEndpoint)
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		socketExists, err := util.DoesSocketExist(socketPath)
@@ -105,7 +102,7 @@ func healthzServer(socketPath string, port int) {
 		}
 	})
 
-	klog.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
+	klog.Fatal(http.ListenAndServe(httpEndpoint, nil))
 }
 
 func removeRegSocket(csiDriverName string) {

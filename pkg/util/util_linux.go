@@ -44,8 +44,11 @@ func CleanupSocketFile(socketPath string) error {
 
 func DoesSocketExist(socketPath string) (bool, error) {
 	fi, err := os.Stat(socketPath)
-	if err == nil && (fi.Mode()&os.ModeSocket) != 0 {
-		return true, nil
+	if err == nil {
+		if isSocket := (fi.Mode()&os.ModeSocket != 0); isSocket {
+			return true, nil
+		}
+		return false, fmt.Errorf("file exists in socketPath %s but it's not a socket.: %+v", socketPath, fi)
 	}
 	if err != nil && !os.IsNotExist(err) {
 		return false, fmt.Errorf("failed to stat the socket %s with error: %+v", socketPath, err)
