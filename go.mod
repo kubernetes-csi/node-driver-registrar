@@ -1,6 +1,6 @@
 module github.com/kubernetes-csi/node-driver-registrar
 
-go 1.15
+go 1.16
 
 require (
 	github.com/container-storage-interface/spec v1.4.0 // indirect
