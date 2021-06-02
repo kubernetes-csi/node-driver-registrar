@@ -1,15 +1,13 @@
-ARG CORE_IMAGE=servercore
-ARG CORE_IMAGE_TAG=1809
-ARG BUILD_IMAGE=nanoserver
-ARG BUILD_IMAGE_TAG=1809
+ARG ADDON_IMAGE=servercore:1809
+ARG BASE_IMAGE=nanoserver:1809
 ARG REGISTRY=mcr.microsoft.com/windows
 
-FROM ${REGISTRY}/${CORE_IMAGE}:${CORE_IMAGE_TAG} as core
-FROM ${REGISTRY}/${BUILD_IMAGE}:${BUILD_IMAGE_TAG}
+FROM ${REGISTRY}/${ADDON_IMAGE} as addon
+FROM ${REGISTRY}/${BASE_IMAGE}
 LABEL description="CSI Node driver registrar"
 
 COPY ./bin/csi-node-driver-registrar.exe /csi-node-driver-registrar.exe
-COPY --from=core /Windows/System32/netapi32.dll /Windows/System32/netapi32.dll
+COPY --from=addon /Windows/System32/netapi32.dll /Windows/System32/netapi32.dll
 
 USER ContainerAdministrator
 ENTRYPOINT ["/csi-node-driver-registrar.exe"]
