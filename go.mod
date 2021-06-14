@@ -3,7 +3,7 @@ module github.com/kubernetes-csi/node-driver-registrar
 go 1.16
 
 require (
-	github.com/container-storage-interface/spec v1.4.0 // indirect
+	github.com/container-storage-interface/spec v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.1 // indirect
 	github.com/kubernetes-csi/csi-lib-utils v0.9.1
 	github.com/prometheus/client_golang v1.9.0 // indirect
