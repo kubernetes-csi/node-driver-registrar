@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 /*
@@ -22,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func Umask(mask int) (int, error) {
@@ -52,4 +54,48 @@ func DoesSocketExist(socketPath string) (bool, error) {
 		return false, fmt.Errorf("failed to lstat the socket %s with error: %+v", socketPath, err)
 	}
 	return true, nil
+}
+
+func CleanupFile(filePath string) error {
+	fileExists, err := DoesFileExist(filePath)
+	if err != nil {
+		return err
+	}
+	if fileExists {
+		if err := os.Remove(filePath); err != nil {
+			return fmt.Errorf("failed to remove stale file=%s with error: %+v", filePath, err)
+		}
+	}
+	return nil
+}
+
+func DoesFileExist(filePath string) (bool, error) {
+	info, err := os.Lstat(filePath)
+	if err == nil {
+		return info.Mode().IsRegular(), nil
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return false, fmt.Errorf("Failed to stat the file=%s with error: %+v", filePath, err)
+	}
+	return false, nil
+}
+
+func TouchFile(filePath string) error {
+	exists, err := DoesFileExist(filePath)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		err := os.MkdirAll(filepath.Dir(filePath), 0755)
+		if err != nil {
+			return err
+		}
+
+		file, err := os.Create(filePath)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	}
+	return nil
 }
