@@ -24,10 +24,12 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
@@ -62,6 +64,19 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	grpcServer := grpc.NewServer()
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
+
+	// Sometimes on windows after registration with the kubelet plugin we don't
+	// get a callback through GetInfo, as a workaround if we don't get a callback within
+	// the next 10 seconds we'll restart
+	go func() {
+		err := wait.PollImmediate(100*time.Millisecond, 10*time.Second, func() (bool, error) {
+			return kubeletRegistrationCallbackReceived, nil
+		})
+		if err != nil {
+			klog.Errorf("Timed out waiting for kubelet registration callback")
+			os.Exit(1)
+		}
+	}()
 
 	go healthzServer(socketPath, httpEndpoint)
 	go removeRegSocket(csiDriverName)

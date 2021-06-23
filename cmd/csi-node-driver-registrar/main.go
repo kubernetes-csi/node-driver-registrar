@@ -41,6 +41,12 @@ const (
 	sleepDuration = 2 * time.Minute
 )
 
+var (
+	// kubeletRegistrationCallbackReceived is set to true when the kubelet calls the GetInfo callback
+	// meaning that the registration process is successful
+	kubeletRegistrationCallbackReceived = false
+)
+
 // Command line flags
 var (
 	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
@@ -78,6 +84,7 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	klog.Infof("Received GetInfo call: %+v", req)
+	kubeletRegistrationCallbackReceived = true
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
 		Name:              e.driverName,

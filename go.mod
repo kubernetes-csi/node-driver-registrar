@@ -14,6 +14,7 @@ require (
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20210317182105-75c7a8546eb9 // indirect
 	google.golang.org/grpc v1.36.0
+	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v0.21.0
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/kubelet v0.21.0
