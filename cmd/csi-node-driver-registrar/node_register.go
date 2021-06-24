@@ -24,12 +24,10 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
-	"time"
 
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
@@ -62,21 +60,21 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	}
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
-	// Registers kubelet plugin watcher api.
-	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
-	// Sometimes on windows after registration with the kubelet plugin we don't
-	// get a callback through GetInfo, as a workaround if we don't get a callback within
-	// the next 10 seconds we'll restart
-	go func() {
-		err := wait.PollImmediate(100*time.Millisecond, 10*time.Second, func() (bool, error) {
-			return kubeletRegistrationCallbackReceived, nil
-		})
+	// Make sure that the lock file doesn't exist,
+	// it could exist because the container was forcefully shut down
+	if *kubeletRegistrationAckPath != "" {
+		// the file might not exist, an error is only returned if there was a failure trying
+		// to remove a file that already exists or if we couldn't get do a file stat
+		err = util.CleanupFile(*kubeletRegistrationAckPath)
 		if err != nil {
-			klog.Errorf("Timed out waiting for kubelet registration callback")
+			klog.Errorf("Failed to cleanup file=%s with error: %+v", *kubeletRegistrationAckPath, err)
 			os.Exit(1)
 		}
-	}()
+	}
+
+	// Registers kubelet plugin watcher api.
+	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
 	go healthzServer(socketPath, httpEndpoint)
 	go removeRegSocket(csiDriverName)
@@ -84,6 +82,11 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	if err := grpcServer.Serve(lis); err != nil {
 		klog.Errorf("Registration Server stopped serving: %v", err)
 		os.Exit(1)
+	}
+
+	if *kubeletRegistrationAckPath != "" {
+		// delete the lock file on graceful shutdown
+		_ = util.CleanupFile(*kubeletRegistrationAckPath)
 	}
 	// If gRPC server is gracefully shutdown, exit
 	os.Exit(0)

@@ -29,6 +29,7 @@ import (
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
 	csirpc "github.com/kubernetes-csi/csi-lib-utils/rpc"
+	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
@@ -41,12 +42,6 @@ const (
 	sleepDuration = 2 * time.Minute
 )
 
-var (
-	// kubeletRegistrationCallbackReceived is set to true when the kubelet calls the GetInfo callback
-	// meaning that the registration process is successful
-	kubeletRegistrationCallbackReceived = false
-)
-
 // Command line flags
 var (
 	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
@@ -57,7 +52,13 @@ var (
 	healthzPort             = flag.Int("health-port", 0, "(deprecated) TCP port for healthz requests. Set to 0 to disable the healthz server. Only one of `--health-port` and `--http-endpoint` can be set.")
 	httpEndpoint            = flag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
 	showVersion             = flag.Bool("version", false, "Show version.")
-	version                 = "unknown"
+
+	// kubelet registration succeed flags
+	kubeletRegistrationAckPath  = flag.String("kubelet-registration-ack-path", "", "If set, a temp file with this name will be created after the kubelet registration process succeeds.")
+	kubeletRegistrationCheckAck = flag.String("kubelet-registration-check-ack", "", "Checks that the kubelet plugin registration ack file exists, if set it must be the same value as kubelet-registration-ack-path.")
+
+	// Set during compilation time
+	version = "unknown"
 
 	// List of supported versions
 	supportedVersions = []string{"1.0.0"}
@@ -84,7 +85,16 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	klog.Infof("Received GetInfo call: %+v", req)
-	kubeletRegistrationCallbackReceived = true
+
+	if *kubeletRegistrationAckPath != "" {
+		err := util.TouchFile(*kubeletRegistrationAckPath)
+		if err != nil {
+			klog.ErrorS(err, "Failed to write lock file=%s", *kubeletRegistrationAckPath)
+			os.Exit(1)
+		}
+		klog.Infof("Lock file=%s created.", *kubeletRegistrationAckPath)
+	}
+
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
 		Name:              e.driverName,
@@ -108,14 +118,30 @@ func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	if *kubeletRegistrationPath == "" {
-		klog.Error("kubelet-registration-path is a required parameter")
-		os.Exit(1)
+	if *kubeletRegistrationCheckAck != "" {
+		// check for the existence of the lock file
+		exists, err := util.DoesFileExist(*kubeletRegistrationCheckAck)
+		if err != nil {
+			klog.ErrorS(err, "Failed to check that the path=%s exists", *kubeletRegistrationCheckAck)
+			os.Exit(1)
+		}
+		if !exists {
+			klog.Errorf("path=%s doesn't exist, the kubelet plugin registration hasn't succeeded yet", *kubeletRegistrationCheckAck)
+			os.Exit(1)
+		}
+		klog.Infof("kubelet plugin registration succeded")
+		// registration succeeded, the lock file is no longer needed
+		os.Exit(0)
 	}
 
 	if *showVersion {
 		fmt.Println(os.Args[0], version)
 		return
+	}
+
+	if *kubeletRegistrationPath == "" {
+		klog.Error("kubelet-registration-path is a required parameter")
+		os.Exit(1)
 	}
 	klog.Infof("Version: %s", version)
 
