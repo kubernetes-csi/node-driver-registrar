@@ -63,12 +63,12 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 
 	// Make sure that the lock file doesn't exist,
 	// it could exist because the container was forcefully shut down
-	if *kubeletRegistrationAckPath != "" {
+	if *kubeletRegistrationSucceededLockfilePath != "" {
 		// the file might not exist, an error is only returned if there was a failure trying
 		// to remove a file that already exists or if we couldn't get do a file stat
-		err = util.CleanupFile(*kubeletRegistrationAckPath)
+		err = util.CleanupFile(*kubeletRegistrationSucceededLockfilePath)
 		if err != nil {
-			klog.Errorf("Failed to cleanup file=%s with error: %+v", *kubeletRegistrationAckPath, err)
+			klog.Errorf("Failed to cleanup file=%s with error: %+v", *kubeletRegistrationSucceededLockfilePath, err)
 			os.Exit(1)
 		}
 	}
@@ -84,9 +84,9 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 		os.Exit(1)
 	}
 
-	if *kubeletRegistrationAckPath != "" {
+	if *kubeletRegistrationSucceededLockfilePath != "" {
 		// delete the lock file on graceful shutdown
-		_ = util.CleanupFile(*kubeletRegistrationAckPath)
+		_ = util.CleanupFile(*kubeletRegistrationSucceededLockfilePath)
 	}
 	// If gRPC server is gracefully shutdown, exit
 	os.Exit(0)

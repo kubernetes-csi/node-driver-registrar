@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
@@ -53,9 +54,9 @@ var (
 	httpEndpoint            = flag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
 	showVersion             = flag.Bool("version", false, "Show version.")
 
-	// kubelet registration succeed flags
-	kubeletRegistrationAckPath  = flag.String("kubelet-registration-ack-path", "", "If set, a temp file with this name will be created after the kubelet registration process succeeds.")
-	kubeletRegistrationCheckAck = flag.String("kubelet-registration-check-ack", "", "Checks that the kubelet plugin registration ack file exists, if set it must be the same value as kubelet-registration-ack-path.")
+	// kubelet registration succeeded flags
+	kubeletRegistrationSucceededLockfilePath = flag.String("kubelet-registration-succeeded-lockfile-path", "", "If set, a temp file with this name will be created after the kubelet registration process succeeds.")
+	kubeletRegistrationSucceededMode         = flag.String("kubelet-registration-succeeded-mode", "", `Used only when --kubelet-registration-succeeded-lockfile-path is set to check if the kubelet registration process succeeded in an exec probe, the only posible value is "probe".`)
 
 	// Set during compilation time
 	version = "unknown"
@@ -86,13 +87,13 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	klog.Infof("Received GetInfo call: %+v", req)
 
-	if *kubeletRegistrationAckPath != "" {
-		err := util.TouchFile(*kubeletRegistrationAckPath)
+	if *kubeletRegistrationSucceededLockfilePath != "" {
+		err := util.TouchFile(*kubeletRegistrationSucceededLockfilePath)
 		if err != nil {
-			klog.ErrorS(err, "Failed to write lock file=%s", *kubeletRegistrationAckPath)
+			klog.ErrorS(err, "Failed to write lock file=%s", *kubeletRegistrationSucceededLockfilePath)
 			os.Exit(1)
 		}
-		klog.Infof("Lock file=%s created.", *kubeletRegistrationAckPath)
+		klog.Infof("Lock file=%s created.", *kubeletRegistrationSucceededLockfilePath)
 	}
 
 	return &registerapi.PluginInfo{
@@ -113,20 +114,26 @@ func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status
 	return &registerapi.RegistrationStatusResponse{}, nil
 }
 
+// Returns true if the kubelet registration succeeded "probe" mode is on
+func isKubeletRegistrationExecProbeMode() bool {
+	return *kubeletRegistrationSucceededLockfilePath != "" &&
+		strings.EqualFold(*kubeletRegistrationSucceededMode, "probe")
+}
+
 func main() {
 	klog.InitFlags(nil)
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	if *kubeletRegistrationCheckAck != "" {
+	if isKubeletRegistrationExecProbeMode() {
 		// check for the existence of the lock file
-		exists, err := util.DoesFileExist(*kubeletRegistrationCheckAck)
+		exists, err := util.DoesFileExist(*kubeletRegistrationSucceededLockfilePath)
 		if err != nil {
-			klog.ErrorS(err, "Failed to check that the path=%s exists", *kubeletRegistrationCheckAck)
+			klog.ErrorS(err, "Failed to check that the path=%s exists", *kubeletRegistrationSucceededLockfilePath)
 			os.Exit(1)
 		}
 		if !exists {
-			klog.Errorf("path=%s doesn't exist, the kubelet plugin registration hasn't succeeded yet", *kubeletRegistrationCheckAck)
+			klog.Errorf("path=%s doesn't exist, the kubelet plugin registration hasn't succeeded yet", *kubeletRegistrationSucceededLockfilePath)
 			os.Exit(1)
 		}
 		klog.Infof("kubelet plugin registration succeded")
