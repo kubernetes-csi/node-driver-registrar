@@ -60,6 +60,19 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	}
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
+
+	// Make sure that the lock file doesn't exist,
+	// it could exist because the container was forcefully shut down
+	if *kubeletRegistrationSucceededLockfilePath != "" {
+		// the file might not exist, an error is only returned if there was a failure trying
+		// to remove a file that already exists or if we couldn't get do a file stat
+		err = util.CleanupFile(*kubeletRegistrationSucceededLockfilePath)
+		if err != nil {
+			klog.Errorf("Failed to cleanup file=%s with error: %+v", *kubeletRegistrationSucceededLockfilePath, err)
+			os.Exit(1)
+		}
+	}
+
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
@@ -69,6 +82,11 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	if err := grpcServer.Serve(lis); err != nil {
 		klog.Errorf("Registration Server stopped serving: %v", err)
 		os.Exit(1)
+	}
+
+	if *kubeletRegistrationSucceededLockfilePath != "" {
+		// delete the lock file on graceful shutdown
+		_ = util.CleanupFile(*kubeletRegistrationSucceededLockfilePath)
 	}
 	// If gRPC server is gracefully shutdown, exit
 	os.Exit(0)
