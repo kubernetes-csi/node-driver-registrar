@@ -150,14 +150,14 @@ func main() {
 	if modeIsKubeletRegistrationProbe() {
 		lockfileExists, err := util.DoesFileExist(registrationProbePath)
 		if err != nil {
-			fmt.Printf("Failed to check if registration path exists, registrationProbePath=%s err=%v", registrationProbePath, err)
+			klog.Fatalf("Failed to check if registration path exists, registrationProbePath=%s err=%v", registrationProbePath, err)
 			os.Exit(1)
 		}
 		if !lockfileExists {
-			fmt.Printf("Kubelet plugin registration hasn't succeeded yet, file=%s doesn't exist.", registrationProbePath)
+			klog.Fatalf("Kubelet plugin registration hasn't succeeded yet, file=%s doesn't exist.", registrationProbePath)
 			os.Exit(1)
 		}
-		fmt.Printf("Kubelet plugin registration succeeded.")
+		klog.Infof("Kubelet plugin registration succeeded.")
 		os.Exit(0)
 	}
 

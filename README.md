@@ -62,7 +62,7 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 
 * `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
 
-* `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully, in the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
+* `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process to register the driver with kubelet. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully. In the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
 
 ### Required permissions
 
@@ -85,7 +85,7 @@ specified address and the path `/healthz`, indicating whether the registration s
 
 ### Health Check with an exec probe
 
-If `--mode=kubelet-registration-probe` node-driver-registrar can act as a probe checking that kubelet has registered the driver meaning that the kubelet plugin registration succeeded, this is useful to detect if the registration got stuck as seen in issue [#143](https://github.com/kubernetes-csi/node-driver-registrar/issues/143)
+If `--mode=kubelet-registration-probe` is set, node-driver-registrar can act as a probe checking if kubelet plugin registration succeeded. This is useful to detect if the registration got stuck as seen in issue [#143](https://github.com/kubernetes-csi/node-driver-registrar/issues/143)
 
 The value of `--kubelet-registration-path` must be the same as the one set in the container args, `--csi-address` is not required in this mode, for example:
 
@@ -98,12 +98,12 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
       args:
         - "--v=5"
         - "--csi-address=/csi/csi.sock"
-        - "--kubelet-registration-path=/var/lib/kubelet/plugins/pd.csi.storage.gke.io/csi.sock"
+        - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
       livenessProbe:
         exec:
           command:
           - /csi-node-driver-registrar
-          - --kubelet-registration-path=/var/lib/kubelet/plugins/pd.csi.storage.gke.io/csi.sock
+          - --kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock
           - --mode=kubelet-registration-probe
         initialDelaySeconds: 3
 ```
@@ -116,12 +116,12 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
       args:
         - --v=5
         - --csi-address=unix://C:\\csi\\csi.sock
-        - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\pd.csi.storage.gke.io\\csi.sock
+        - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\<drivername.example.com>\\csi.sock
       livenessProbe:
         exec:
           command:
           - /csi-node-driver-registrar.exe
-          - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\pd.csi.storage.gke.io\\csi.sock
+          - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\<drivername.example.com>\\csi.sock
           - --mode=kubelet-registration-probe
         initialDelaySeconds: 3
 ```
@@ -136,7 +136,7 @@ the actual driver's name.
 ```bash
       containers:
         - name: csi-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
