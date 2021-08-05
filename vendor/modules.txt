@@ -144,18 +144,18 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
-# k8s.io/apimachinery v0.22.0-rc.0
+# k8s.io/apimachinery v0.22.0
 k8s.io/apimachinery/pkg/util/sets
 k8s.io/apimachinery/pkg/version
-# k8s.io/client-go v0.22.0-rc.0
+# k8s.io/client-go v0.22.0
 ## explicit
 k8s.io/client-go/util/testing
-# k8s.io/component-base v0.22.0-rc.0
+# k8s.io/component-base v0.22.0
 k8s.io/component-base/metrics
 k8s.io/component-base/version
 # k8s.io/klog/v2 v2.9.0
 ## explicit
 k8s.io/klog/v2
-# k8s.io/kubelet v0.22.0-rc.0
+# k8s.io/kubelet v0.22.0
 ## explicit
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
