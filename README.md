@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/kubernetes-csi/node-driver-registrar.svg?branch=master)](https://travis-ci.org/kubernetes-csi/node-driver-registrar)
-
 # Node Driver Registrar
 
 The node-driver-registrar is a sidecar container that registers the CSI driver
