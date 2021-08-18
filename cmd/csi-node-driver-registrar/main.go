@@ -21,10 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
+	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog/v2"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
@@ -41,6 +43,21 @@ const (
 	sleepDuration = 2 * time.Minute
 )
 
+const (
+	// ModeRegistration runs node-driver-registrar as a long running process
+	ModeRegistration = "registration"
+
+	// ModeKubeletRegistrationProbe makes node-driver-registrar act as an exec probe
+	// that checks if the kubelet plugin registration succeded.
+	ModeKubeletRegistrationProbe = "kubelet-registration-probe"
+)
+
+var (
+	// The registration probe path, set when the program runs and used as the path of the file
+	// to create when the kubelet plugin registration succeeds.
+	registrationProbePath = ""
+)
+
 // Command line flags
 var (
 	connectionTimeout       = flag.Duration("connection-timeout", 0, "The --connection-timeout flag is deprecated")
@@ -51,7 +68,10 @@ var (
 	healthzPort             = flag.Int("health-port", 0, "(deprecated) TCP port for healthz requests. Set to 0 to disable the healthz server. Only one of `--health-port` and `--http-endpoint` can be set.")
 	httpEndpoint            = flag.String("http-endpoint", "", "The TCP network address where the HTTP server for diagnostics, including the health check indicating whether the registration socket exists, will listen (example: `:8080`). The default is empty string, which means the server is disabled. Only one of `--health-port` and `--http-endpoint` can be set.")
 	showVersion             = flag.Bool("version", false, "Show version.")
-	version                 = "unknown"
+	mode                    = flag.String("mode", ModeRegistration, `The running mode of node-driver-registrar. "registration" runs node-driver-registrar as a long running process. "kubelet-registration-probe" runs as a health check and returns a status code of 0 if the driver was registered successfully, in the probe definition make sure that the value of --kubelet-registration-path is the same as in the container.`)
+
+	// Set during compilation time
+	version = "unknown"
 
 	// List of supported versions
 	supportedVersions = []string{"1.0.0"}
@@ -78,6 +98,14 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	klog.Infof("Received GetInfo call: %+v", req)
+
+	// on successful registration, create the registration probe file
+	err := util.TouchFile(registrationProbePath)
+	if err != nil {
+		klog.ErrorS(err, "Failed to create registration probe file", "registrationProbePath", registrationProbePath)
+	}
+	klog.InfoS("Kubelet registration probe created", "path", registrationProbePath)
+
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
 		Name:              e.driverName,
@@ -96,21 +124,45 @@ func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status
 	return &registerapi.RegistrationStatusResponse{}, nil
 }
 
+func modeIsKubeletRegistrationProbe() bool {
+	return *mode == ModeKubeletRegistrationProbe
+}
+
 func main() {
 	klog.InitFlags(nil)
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
-	if *kubeletRegistrationPath == "" {
-		klog.Error("kubelet-registration-path is a required parameter")
-		os.Exit(1)
-	}
-
 	if *showVersion {
 		fmt.Println(os.Args[0], version)
 		return
 	}
+
+	if *kubeletRegistrationPath == "" {
+		klog.Error("kubelet-registration-path is a required parameter")
+		os.Exit(1)
+	}
+	// set after we made sure that *kubeletRegistrationPath exists
+	kubeletRegistrationPathDir := filepath.Dir(*kubeletRegistrationPath)
+	registrationProbePath = filepath.Join(kubeletRegistrationPathDir, "registration")
+
+	// with the mode kubelet-registration-probe
+	if modeIsKubeletRegistrationProbe() {
+		lockfileExists, err := util.DoesFileExist(registrationProbePath)
+		if err != nil {
+			klog.Fatalf("Failed to check if registration path exists, registrationProbePath=%s err=%v", registrationProbePath, err)
+			os.Exit(1)
+		}
+		if !lockfileExists {
+			klog.Fatalf("Kubelet plugin registration hasn't succeeded yet, file=%s doesn't exist.", registrationProbePath)
+			os.Exit(1)
+		}
+		klog.Infof("Kubelet plugin registration succeeded.")
+		os.Exit(0)
+	}
+
 	klog.Infof("Version: %s", version)
+	klog.Infof("Running node-driver-registrar in mode=%s", *mode)
 
 	if *healthzPort > 0 && *httpEndpoint != "" {
 		klog.Error("only one of `--health-port` and `--http-endpoint` can be set.")

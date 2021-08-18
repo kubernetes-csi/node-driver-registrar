@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/kubernetes-csi/node-driver-registrar.svg?branch=master)](https://travis-ci.org/kubernetes-csi/node-driver-registrar)
-
 # Node Driver Registrar
 
 The node-driver-registrar is a sidecar container that registers the CSI driver
@@ -47,20 +45,22 @@ There are two UNIX domain sockets used by the node-driver-registrar:
   operations (e.g. `/csi/csi.sock`).
 * `--kubelet-registration-path`: This is the path to the CSI driver socket on
   the host node that kubelet will use to issue CSI operations (e.g.
-  `/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock). Note this is NOT
+  `/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock`). Note this is NOT
   the path to the registration socket.
 
 ### Optional arguments
 
-* `--http-endpoint`: "The TCP network address where the HTTP server for diagnostics, including
+* `--http-endpoint`: The TCP network address where the HTTP server for diagnostics, including
   the health check indicating whether the registration socket exists, will listen (example:
   `:8080`). The default is empty string, which means the server is disabled.
 
 * `--health-port`: (deprecated) This is the port of the health check server for the
-  node-driver-registrar, which checks if the registration socket exists. A value <= 0 disables
+  node-driver-registrar, which checks if the registration socket exists. A value &lt;= 0 disables
   the server. Server is disabled by default.
 
 * `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
+
+* `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process to register the driver with kubelet. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully. In the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
 
 ### Required permissions
 
@@ -76,10 +76,55 @@ permissions to:
 * Access the registration socket (typically in `/var/lib/kubelet/plugins_registry/`).
   * Used by the `node-driver-registrar` to register the driver with kubelet.
 
-### Health Check
+### Health Check with the http server
 
 If `--http-endpoint` is set, the node-driver-registrar exposes a health check endpoint at the
 specified address and the path `/healthz`, indicating whether the registration socket exists.
+
+### Health Check with an exec probe
+
+If `--mode=kubelet-registration-probe` is set, node-driver-registrar can act as a probe checking if kubelet plugin registration succeeded. This is useful to detect if the registration got stuck as seen in issue [#143](https://github.com/kubernetes-csi/node-driver-registrar/issues/143)
+
+The value of `--kubelet-registration-path` must be the same as the one set in the container args, `--csi-address` is not required in this mode, for example:
+
+**Linux**
+
+```yaml
+  containers:
+    - name: csi-driver-registrar
+      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0
+      args:
+        - "--v=5"
+        - "--csi-address=/csi/csi.sock"
+        - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
+      livenessProbe:
+        exec:
+          command:
+          - /csi-node-driver-registrar
+          - --kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock
+          - --mode=kubelet-registration-probe
+        initialDelaySeconds: 3
+```
+
+**Windows**
+```yaml
+  containers:
+    - name: csi-driver-registrar
+      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0
+      args:
+        - --v=5
+        - --csi-address=unix://C:\\csi\\csi.sock
+        - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\<drivername.example.com>\\csi.sock
+      livenessProbe:
+        exec:
+          command:
+          - /csi-node-driver-registrar.exe
+          - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\<drivername.example.com>\\csi.sock
+          - --mode=kubelet-registration-probe
+        initialDelaySeconds: 3
+```
+
+Related issue [#143](https://github.com/kubernetes-csi/node-driver-registrar/issues/143)
 
 ### Example
 
@@ -89,7 +134,7 @@ the actual driver's name.
 ```bash
       containers:
         - name: csi-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
