@@ -13,9 +13,9 @@ the CSI calls on.
 
 This information reflects the head of this branch.
 
-| Compatible with CSI Version                                                                | Container Image                                         | [Min K8s Version](https://kubernetes-csi.github.io/docs/kubernetes-compatibility.html#minimum-version) |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------- | --------------- |
-| [CSI Spec v1.3.0](https://github.com/container-storage-interface/spec/releases/tag/v1.3.0) | k8s.gcr.io/sig-storage/csi-node-driver-registrar        | 1.13            |
+| Compatible with CSI Version                                                                | Container Image                                  | [Min K8s Version](https://kubernetes-csi.github.io/docs/kubernetes-compatibility.html#minimum-version) |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| [CSI Spec v1.3.0](https://github.com/container-storage-interface/spec/releases/tag/v1.3.0) | k8s.gcr.io/sig-storage/csi-node-driver-registrar | 1.13                                                                                                   |
 
 For release-0.4 and below, please refer to the [driver-registrar
 repository](https://github.com/kubernetes-csi/driver-registrar).
@@ -103,7 +103,8 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
           - /csi-node-driver-registrar
           - --kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock
           - --mode=kubelet-registration-probe
-        initialDelaySeconds: 3
+        initialDelaySeconds: 30
+        timeoutSeconds: 15
 ```
 
 **Windows**
@@ -121,7 +122,8 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
           - /csi-node-driver-registrar.exe
           - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\<drivername.example.com>\\csi.sock
           - --mode=kubelet-registration-probe
-        initialDelaySeconds: 3
+        initialDelaySeconds: 30
+        timeoutSeconds: 15
 ```
 
 Related issue [#143](https://github.com/kubernetes-csi/node-driver-registrar/issues/143)
