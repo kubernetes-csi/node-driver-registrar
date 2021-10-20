@@ -35,7 +35,7 @@ import (
 func nodeRegister(csiDriverName, httpEndpoint string) {
 	// When kubeletRegistrationPath is specified then driver-registrar ONLY acts
 	// as gRPC server which replies to registration requests initiated by kubelet's
-	// pluginswatcher infrastructure. Node labeling is done by kubelet's csi code.
+	// plugins watcher infrastructure. Node labeling is done by kubelet's csi code.
 	registrar := newRegistrationServer(csiDriverName, *kubeletRegistrationPath, supportedVersions)
 	socketPath := buildSocketPath(csiDriverName)
 	if err := util.CleanupSocketFile(socketPath); err != nil {
@@ -61,7 +61,7 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
 
-	// Before registing node-driver-registrar with the kubelet ensure that the lockfile doesn't exist
+	// Before registering node-driver-registrar with the kubelet ensure that the lockfile doesn't exist
 	// a lockfile may exist because the container was forcefully shutdown
 	util.CleanupFile(registrationProbePath)
 

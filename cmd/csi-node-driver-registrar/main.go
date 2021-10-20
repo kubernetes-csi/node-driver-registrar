@@ -48,7 +48,7 @@ const (
 	ModeRegistration = "registration"
 
 	// ModeKubeletRegistrationProbe makes node-driver-registrar act as an exec probe
-	// that checks if the kubelet plugin registration succeded.
+	// that checks if the kubelet plugin registration succeeded.
 	ModeKubeletRegistrationProbe = "kubelet-registration-probe"
 )
 
@@ -86,7 +86,7 @@ type registrationServer struct {
 
 var _ registerapi.RegistrationServer = registrationServer{}
 
-// NewregistrationServer returns an initialized registrationServer instance
+// newRegistrationServer returns an initialized registrationServer instance
 func newRegistrationServer(driverName string, endpoint string, versions []string) registerapi.RegistrationServer {
 	return &registrationServer{
 		driverName: driverName,
