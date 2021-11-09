@@ -62,6 +62,8 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 
 * `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process to register the driver with kubelet. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully. In the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
 
+* `--enable-pprof`: Enable pprof profiling on the TCP network address specified by `--http-endpoint`.
+
 ### Required permissions
 
 The node-driver-registrar does not interact with the Kubernetes API, so no RBAC

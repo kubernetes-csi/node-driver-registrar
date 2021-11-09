@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"runtime"
@@ -68,7 +69,7 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
-	go healthzServer(socketPath, httpEndpoint)
+	go httpServer(socketPath, httpEndpoint)
 	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
@@ -86,14 +87,16 @@ func buildSocketPath(csiDriverName string) string {
 	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
 }
 
-func healthzServer(socketPath string, httpEndpoint string) {
+func httpServer(socketPath string, httpEndpoint string) {
 	if httpEndpoint == "" {
-		klog.Infof("Skipping healthz server because HTTP endpoint is set to: %q", httpEndpoint)
+		klog.Infof("Skipping HTTP server because endpoint is set to: %q", httpEndpoint)
 		return
 	}
-	klog.Infof("Starting healthz server at HTTP endpoint: %v\n", httpEndpoint)
+	klog.Infof("Starting HTTP server at endpoint: %v\n", httpEndpoint)
 
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
+	// Prepare http endpoint for healthz + profiling (if enabled)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		socketExists, err := util.DoesSocketExist(socketPath)
 		if err == nil && socketExists {
 			w.WriteHeader(http.StatusOK)
@@ -109,6 +112,16 @@ func healthzServer(socketPath string, httpEndpoint string) {
 			klog.Errorf("health check failed, registration socket does not exist")
 		}
 	})
+
+	if *enableProfile {
+		klog.InfoS("Starting profiling", "endpoint", httpEndpoint)
+
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
 
 	klog.Fatal(http.ListenAndServe(httpEndpoint, nil))
 }
