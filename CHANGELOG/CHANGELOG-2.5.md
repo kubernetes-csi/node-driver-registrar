@@ -1,3 +1,9 @@
+# Release notes for v2.5.0
+
+[Documentation](https://kubernetes-csi.github.io)
+
+# Changelog since v2.4.0
+
 ## Changes by Kind
 
 ### Uncategorized
