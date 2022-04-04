@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.10.0
+	github.com/prometheus/client_golang v1.11.1 // indirect
 	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
 	google.golang.org/grpc v1.40.0
 	k8s.io/client-go v0.23.0
