@@ -123,7 +123,7 @@ func httpServer(socketPath string, httpEndpoint string) {
 		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
 
-	klog.Fatal(http.ListenAndServe(httpEndpoint, nil))
+	klog.Fatal(http.ListenAndServe(httpEndpoint, mux))
 }
 
 func removeRegSocket(csiDriverName string) {
