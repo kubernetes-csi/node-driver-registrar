@@ -94,7 +94,7 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
 ```yaml
   containers:
     - name: csi-driver-registrar
-      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.6.0
       args:
         - "--v=5"
         - "--csi-address=/csi/csi.sock"
@@ -113,7 +113,7 @@ The value of `--kubelet-registration-path` must be the same as the one set in th
 ```yaml
   containers:
     - name: csi-driver-registrar
-      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+      image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.6.0
       args:
         - --v=5
         - --csi-address=unix://C:\\csi\\csi.sock
@@ -138,7 +138,7 @@ the actual driver's name.
 ```bash
       containers:
         - name: csi-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.6.0
           args:
             - "--csi-address=/csi/csi.sock"
             - "--kubelet-registration-path=/var/lib/kubelet/plugins/<drivername.example.com>/csi.sock"
