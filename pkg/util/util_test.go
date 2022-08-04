@@ -28,7 +28,6 @@ import (
 )
 
 var socketFileName = "reg.sock"
-var kubeletRegistrationPath = "/var/lib/kubelet/plugins/csi-dummy/registration"
 
 // TestSocketFileDoesNotExist - Test1: file does not exist. So clean up should be successful.
 func TestSocketFileDoesNotExist(t *testing.T) {
@@ -184,7 +183,9 @@ func TestTouchFile(t *testing.T) {
 	}
 	defer os.RemoveAll(testDir)
 
-	filePath := filepath.Join(testDir, kubeletRegistrationPath)
+	// In real life, testDir would be the kubeletRegistration socket dirname
+	// e.g. /var/lib/kubelet/plugins/<driver>/
+	filePath := filepath.Join(testDir, "registration")
 	fileExists, err := DoesFileExist(filePath)
 	if err != nil {
 		t.Fatalf("Failed to execute file exist: %+v", err)
