@@ -100,7 +100,7 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.47.0
+# google.golang.org/grpc v1.49.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
