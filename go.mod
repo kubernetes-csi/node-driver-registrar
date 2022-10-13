@@ -7,7 +7,7 @@ require (
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 	google.golang.org/grpc v1.50.0
 	k8s.io/client-go v0.25.0
-	k8s.io/klog/v2 v2.70.1
+	k8s.io/klog/v2 v2.80.1
 	k8s.io/kubelet v0.24.0
 )
 
