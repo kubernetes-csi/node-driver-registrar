@@ -105,8 +105,9 @@ func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRe
 	err := util.TouchFile(registrationProbePath)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create registration probe file", "registrationProbePath", registrationProbePath)
+	} else {
+		klog.InfoS("Kubelet registration probe created", "path", registrationProbePath)
 	}
-	klog.InfoS("Kubelet registration probe created", "path", registrationProbePath)
 
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
