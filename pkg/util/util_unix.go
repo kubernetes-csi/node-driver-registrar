@@ -22,6 +22,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
 )
@@ -87,6 +88,11 @@ func TouchFile(filePath string) error {
 		return err
 	}
 	if !exists {
+		err := os.MkdirAll(filepath.Dir(filePath), 0755)
+		if err != nil {
+			return err
+		}
+
 		file, err := os.Create(filePath)
 		if err != nil {
 			return err
