@@ -48,3 +48,5 @@ require (
 	k8s.io/component-base v0.25.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 )
+
+replace golang.org/x/text => golang.org/x/text v0.4.0
