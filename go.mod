@@ -48,13 +48,3 @@ require (
 	k8s.io/component-base v0.26.0-rc.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 )
-
-replace k8s.io/api => k8s.io/api v0.26.0-rc.0
-
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.26.0-rc.0
-
-replace k8s.io/client-go => k8s.io/client-go v0.26.0-rc.0
-
-replace k8s.io/component-base => k8s.io/component-base v0.26.0-rc.0
-
-replace k8s.io/kubelet => k8s.io/kubelet v0.26.0-rc.0
