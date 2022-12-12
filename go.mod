@@ -1,6 +1,6 @@
 module github.com/kubernetes-csi/node-driver-registrar
 
-go 1.18
+go 1.19
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.11.0
@@ -8,7 +8,7 @@ require (
 	google.golang.org/grpc v1.51.0
 	k8s.io/client-go v0.26.0
 	k8s.io/klog/v2 v2.80.1
-	k8s.io/kubelet v0.26.0-rc.0
+	k8s.io/kubelet v0.26.0
 )
 
 require (
