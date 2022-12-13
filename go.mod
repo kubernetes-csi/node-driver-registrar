@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.11.0
-	golang.org/x/sys v0.2.0
+	golang.org/x/sys v0.3.0
 	google.golang.org/grpc v1.51.0
 	k8s.io/client-go v0.26.0-rc.0
 	k8s.io/klog/v2 v2.80.1
