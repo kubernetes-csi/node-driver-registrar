@@ -28,10 +28,14 @@ import (
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
+	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
 	csirpc "github.com/kubernetes-csi/csi-lib-utils/rpc"
+	"k8s.io/component-base/featuregate"
+	logsapi "k8s.io/component-base/logs/api/v1"
+	_ "k8s.io/component-base/logs/json/register" // Enable JSON output format.
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
@@ -132,13 +136,55 @@ func modeIsKubeletRegistrationProbe() bool {
 }
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("logtostderr", "true")
-	flag.Parse()
+	// Add logging flags. Both klog.InitFlags and logsapi.AddFlags add some
+	// flags (v, vmodule). We prefer the one from logsapi because that also
+	// updates klog, but not the other way around.
+	//
+	// That logsapi only supports pflag is sub-optimal. Copying from
+	// pflag.FlagSet with VisitAll works, but currently leads to one
+	// problem: -help will call String on the zero value for the flags
+	// to determine the default value, which is not supported by logsapi
+	// and leads to some warnings at the end of -help:
+	//
+	//   panic calling String method on zero v1.verbosityLevelPflag for flag v: runtime error: invalid memory address or nil pointer dereference
+	//   panic calling String method on zero v1.vmoduleConfigurationPFlag for flag vmodule: runtime error: invalid memory address or nil pointer dereference
+	//
+	// Will be fixed by https://github.com/kubernetes/kubernetes/pull/114680
+	c := logsapi.NewLoggingConfiguration()
+	var pFlagSet pflag.FlagSet
+	logsapi.AddFlags(c, &pFlagSet)
+	pFlagSet.VisitAll(func(f *pflag.Flag) {
+		flag.Var(f.Value, f.Name, f.Usage)
+	})
+	var flagSet flag.FlagSet
+	klog.InitFlags(&flagSet)
+	flagSet.VisitAll(func(f *flag.Flag) {
+		if flag.Lookup(f.Name) != nil {
+			return
+		}
+		flag.Var(f.Value, f.Name, f.Usage)
+	})
 
+	flag.Parse()
 	if *showVersion {
 		fmt.Println(os.Args[0], version)
 		return
+	}
+
+	// This command has no --feature-gate parameter, which would make it
+	// impossible to use features that are considered alpha and thus
+	// disable by default. Therefore those features get enabled here. They
+	// are still marked as ALPHA in the command line help.
+	fg := featuregate.NewFeatureGate()
+	logsapi.AddFeatureGates(fg)
+	fg.SetFromMap(map[string]bool{
+		string(logsapi.ContextualLogging):   true,
+		string(logsapi.LoggingAlphaOptions): true,
+	})
+
+	// Switch to desired output format.
+	if err := logsapi.ValidateAndApply(c, fg); err != nil {
+		klog.Fatal(err)
 	}
 
 	if *kubeletRegistrationPath == "" {
