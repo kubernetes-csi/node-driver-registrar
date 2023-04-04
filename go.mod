@@ -8,7 +8,7 @@ require (
 	google.golang.org/grpc v1.52.0
 	k8s.io/client-go v0.27.0-rc.0
 	k8s.io/klog/v2 v2.90.1
-	k8s.io/kubelet v0.26.1
+	k8s.io/kubelet v0.26.3
 )
 
 require (
