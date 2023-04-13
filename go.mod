@@ -1,12 +1,12 @@
 module github.com/kubernetes-csi/node-driver-registrar
 
-go 1.19
+go 1.20
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.12.0
 	golang.org/x/sys v0.6.0
 	google.golang.org/grpc v1.52.0
-	k8s.io/client-go v0.27.0-rc.0
+	k8s.io/client-go v0.27.0
 	k8s.io/klog/v2 v2.90.1
 	k8s.io/kubelet v0.26.1
 )
@@ -45,7 +45,7 @@ require (
 	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.27.0-rc.0 // indirect
-	k8s.io/component-base v0.27.0-rc.0 // indirect
+	k8s.io/apimachinery v0.27.0 // indirect
+	k8s.io/component-base v0.27.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
 )
