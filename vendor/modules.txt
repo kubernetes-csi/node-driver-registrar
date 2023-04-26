@@ -117,7 +117,6 @@ github.com/prometheus/procfs/internal/util
 github.com/spf13/pflag
 # golang.org/x/net v0.8.0
 ## explicit; go 1.17
-golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
@@ -233,7 +232,7 @@ k8s.io/apimachinery/pkg/version
 # k8s.io/client-go v0.27.1
 ## explicit; go 1.20
 k8s.io/client-go/util/testing
-# k8s.io/component-base v0.27.0
+# k8s.io/component-base v0.27.1
 ## explicit; go 1.20
 k8s.io/component-base/metrics
 k8s.io/component-base/metrics/prometheusextension
@@ -258,6 +257,6 @@ k8s.io/kube-openapi/pkg/openapiconv
 k8s.io/kube-openapi/pkg/schemamutation
 k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubelet v0.26.1
-## explicit; go 1.19
+# k8s.io/kubelet v0.27.1
+## explicit; go 1.20
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
