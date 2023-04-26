@@ -226,11 +226,11 @@ google.golang.org/protobuf/types/known/wrapperspb
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/apimachinery v0.27.0
+# k8s.io/apimachinery v0.27.1
 ## explicit; go 1.20
 k8s.io/apimachinery/pkg/util/sets
 k8s.io/apimachinery/pkg/version
-# k8s.io/client-go v0.27.0
+# k8s.io/client-go v0.27.1
 ## explicit; go 1.20
 k8s.io/client-go/util/testing
 # k8s.io/component-base v0.27.0
