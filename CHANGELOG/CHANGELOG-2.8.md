@@ -1,121 +1,81 @@
-## Changes by Kind
+# Release notes for v2.8.0
 
-### Bug or Regression
+[Documentation](https://kubernetes-csi.github.io)
 
-- Revert of #214, node-driver-registrar will create the path specified by `--kubelet-registration-path` (#247, @mauriciopoppe)
+# Changelog since v2.7.0
 
 ## Dependencies
 
 ### Added
-- cloud.google.com/go/accessapproval: v1.5.0
-- cloud.google.com/go/accesscontextmanager: v1.4.0
-- cloud.google.com/go/aiplatform: v1.24.0
-- cloud.google.com/go/analytics: v0.12.0
-- cloud.google.com/go/apigateway: v1.4.0
-- cloud.google.com/go/apigeeconnect: v1.4.0
-- cloud.google.com/go/appengine: v1.5.0
-- cloud.google.com/go/area120: v0.6.0
-- cloud.google.com/go/artifactregistry: v1.9.0
-- cloud.google.com/go/asset: v1.10.0
-- cloud.google.com/go/assuredworkloads: v1.9.0
-- cloud.google.com/go/automl: v1.8.0
-- cloud.google.com/go/baremetalsolution: v0.4.0
-- cloud.google.com/go/batch: v0.4.0
-- cloud.google.com/go/beyondcorp: v0.3.0
-- cloud.google.com/go/billing: v1.7.0
-- cloud.google.com/go/binaryauthorization: v1.4.0
-- cloud.google.com/go/certificatemanager: v1.4.0
-- cloud.google.com/go/channel: v1.9.0
-- cloud.google.com/go/cloudbuild: v1.4.0
-- cloud.google.com/go/clouddms: v1.4.0
-- cloud.google.com/go/cloudtasks: v1.8.0
-- cloud.google.com/go/contactcenterinsights: v1.4.0
-- cloud.google.com/go/container: v1.7.0
-- cloud.google.com/go/containeranalysis: v0.6.0
-- cloud.google.com/go/datacatalog: v1.8.0
-- cloud.google.com/go/dataflow: v0.7.0
-- cloud.google.com/go/dataform: v0.5.0
-- cloud.google.com/go/datafusion: v1.5.0
-- cloud.google.com/go/datalabeling: v0.6.0
-- cloud.google.com/go/dataplex: v1.4.0
-- cloud.google.com/go/dataproc: v1.8.0
-- cloud.google.com/go/dataqna: v0.6.0
-- cloud.google.com/go/datastream: v1.5.0
-- cloud.google.com/go/deploy: v1.5.0
-- cloud.google.com/go/dialogflow: v1.19.0
-- cloud.google.com/go/dlp: v1.7.0
-- cloud.google.com/go/documentai: v1.10.0
-- cloud.google.com/go/domains: v0.7.0
-- cloud.google.com/go/edgecontainer: v0.2.0
-- cloud.google.com/go/essentialcontacts: v1.4.0
-- cloud.google.com/go/eventarc: v1.8.0
-- cloud.google.com/go/filestore: v1.4.0
-- cloud.google.com/go/functions: v1.9.0
-- cloud.google.com/go/gaming: v1.8.0
-- cloud.google.com/go/gkebackup: v0.3.0
-- cloud.google.com/go/gkeconnect: v0.6.0
-- cloud.google.com/go/gkehub: v0.10.0
-- cloud.google.com/go/gkemulticloud: v0.4.0
-- cloud.google.com/go/gsuiteaddons: v1.4.0
-- cloud.google.com/go/iam: v0.7.0
-- cloud.google.com/go/iap: v1.5.0
-- cloud.google.com/go/ids: v1.2.0
-- cloud.google.com/go/iot: v1.4.0
-- cloud.google.com/go/kms: v1.6.0
-- cloud.google.com/go/language: v1.8.0
-- cloud.google.com/go/lifesciences: v0.6.0
-- cloud.google.com/go/longrunning: v0.3.0
-- cloud.google.com/go/managedidentities: v1.4.0
-- cloud.google.com/go/mediatranslation: v0.6.0
-- cloud.google.com/go/memcache: v1.7.0
-- cloud.google.com/go/metastore: v1.8.0
-- cloud.google.com/go/monitoring: v1.8.0
-- cloud.google.com/go/networkconnectivity: v1.7.0
-- cloud.google.com/go/networkmanagement: v1.5.0
-- cloud.google.com/go/networksecurity: v0.6.0
-- cloud.google.com/go/notebooks: v1.5.0
-- cloud.google.com/go/optimization: v1.2.0
-- cloud.google.com/go/orchestration: v1.4.0
-- cloud.google.com/go/orgpolicy: v1.5.0
-- cloud.google.com/go/osconfig: v1.10.0
-- cloud.google.com/go/oslogin: v1.7.0
-- cloud.google.com/go/phishingprotection: v0.6.0
-- cloud.google.com/go/policytroubleshooter: v1.4.0
-- cloud.google.com/go/privatecatalog: v0.6.0
-- cloud.google.com/go/recaptchaenterprise/v2: v2.5.0
-- cloud.google.com/go/recommendationengine: v0.6.0
-- cloud.google.com/go/recommender: v1.8.0
-- cloud.google.com/go/redis: v1.10.0
-- cloud.google.com/go/resourcemanager: v1.4.0
-- cloud.google.com/go/resourcesettings: v1.4.0
-- cloud.google.com/go/retail: v1.11.0
-- cloud.google.com/go/run: v0.3.0
-- cloud.google.com/go/scheduler: v1.7.0
-- cloud.google.com/go/secretmanager: v1.9.0
-- cloud.google.com/go/security: v1.10.0
-- cloud.google.com/go/securitycenter: v1.16.0
-- cloud.google.com/go/servicecontrol: v1.5.0
-- cloud.google.com/go/servicedirectory: v1.7.0
-- cloud.google.com/go/servicemanagement: v1.5.0
-- cloud.google.com/go/serviceusage: v1.4.0
-- cloud.google.com/go/shell: v1.4.0
-- cloud.google.com/go/speech: v1.9.0
-- cloud.google.com/go/storagetransfer: v1.6.0
-- cloud.google.com/go/talent: v1.4.0
-- cloud.google.com/go/texttospeech: v1.5.0
-- cloud.google.com/go/tpu: v1.4.0
-- cloud.google.com/go/trace: v1.4.0
-- cloud.google.com/go/translate: v1.4.0
-- cloud.google.com/go/video: v1.9.0
-- cloud.google.com/go/videointelligence: v1.9.0
-- cloud.google.com/go/vision/v2: v2.5.0
-- cloud.google.com/go/vmmigration: v1.3.0
-- cloud.google.com/go/vpcaccess: v1.5.0
-- cloud.google.com/go/webrisk: v1.7.0
-- cloud.google.com/go/websecurityscanner: v1.4.0
-- cloud.google.com/go/workflows: v1.9.0
-- github.com/cenkalti/backoff/v4: [v4.1.3](https://github.com/cenkalti/backoff/v4/tree/v4.1.3)
-- github.com/go-logr/stdr: [v1.2.2](https://github.com/go-logr/stdr/tree/v1.2.2)
+- cloud.google.com/go/compute/metadata: v0.2.3
+- cloud.google.com/go/compute: v1.15.1
+- cloud.google.com/go/errorreporting: v0.3.0
+- cloud.google.com/go/firestore: v1.9.0
+- cloud.google.com/go/logging: v1.6.1
+- cloud.google.com/go/maps: v0.1.0
+- cloud.google.com/go/pubsublite: v1.5.0
+- cloud.google.com/go/spanner: v1.41.0
+- cloud.google.com/go/vmwareengine: v0.1.0
+- github.com/go-task/slim-sprig: [348f09d](https://github.com/go-task/slim-sprig/tree/348f09d)
+
+### Changed
+- cloud.google.com/go/aiplatform: v1.24.0 → v1.27.0
+- cloud.google.com/go/bigquery: v1.43.0 → v1.44.0
+- cloud.google.com/go/datastore: v1.1.0 → v1.10.0
+- cloud.google.com/go/iam: v0.7.0 → v0.8.0
+- cloud.google.com/go/pubsub: v1.3.1 → v1.27.1
+- github.com/census-instrumentation/opencensus-proto: [v0.2.1 → v0.4.1](https://github.com/census-instrumentation/opencensus-proto/compare/v0.2.1...v0.4.1)
+- github.com/cespare/xxhash/v2: [v2.1.2 → v2.2.0](https://github.com/cespare/xxhash/v2/compare/v2.1.2...v2.2.0)
+- github.com/cncf/udpa/go: [04548b0 → c52dc94](https://github.com/cncf/udpa/go/compare/04548b0...c52dc94)
+- github.com/cncf/xds/go: [cb28da3 → 06c439d](https://github.com/cncf/xds/go/compare/cb28da3...06c439d)
+- github.com/envoyproxy/go-control-plane: [49ff273 → v0.10.3](https://github.com/envoyproxy/go-control-plane/compare/49ff273...v0.10.3)
+- github.com/envoyproxy/protoc-gen-validate: [v0.1.0 → v0.9.1](https://github.com/envoyproxy/protoc-gen-validate/compare/v0.1.0...v0.9.1)
+- github.com/go-openapi/jsonpointer: [v0.19.5 → v0.19.6](https://github.com/go-openapi/jsonpointer/compare/v0.19.5...v0.19.6)
+- github.com/go-openapi/jsonreference: [v0.20.0 → v0.20.1](https://github.com/go-openapi/jsonreference/compare/v0.20.0...v0.20.1)
+- github.com/go-openapi/swag: [v0.19.14 → v0.22.3](https://github.com/go-openapi/swag/compare/v0.19.14...v0.22.3)
+- github.com/golang/glog: [23def4e → v1.0.0](https://github.com/golang/glog/compare/23def4e...v1.0.0)
+- github.com/golang/protobuf: [v1.5.2 → v1.5.3](https://github.com/golang/protobuf/compare/v1.5.2...v1.5.3)
+- github.com/google/pprof: [1a94d86 → 4bb14d4](https://github.com/google/pprof/compare/1a94d86...4bb14d4)
+- github.com/google/uuid: [v1.1.2 → v1.3.0](https://github.com/google/uuid/compare/v1.1.2...v1.3.0)
+- github.com/kr/pretty: [v0.2.0 → v0.3.0](https://github.com/kr/pretty/compare/v0.2.0...v0.3.0)
+- github.com/kubernetes-csi/csi-lib-utils: [v0.12.0 → v0.13.0](https://github.com/kubernetes-csi/csi-lib-utils/compare/v0.12.0...v0.13.0)
+- github.com/mailru/easyjson: [v0.7.6 → v0.7.7](https://github.com/mailru/easyjson/compare/v0.7.6...v0.7.7)
+- github.com/moby/term: [39b0c02 → 1aeaba8](https://github.com/moby/term/compare/39b0c02...1aeaba8)
+- github.com/onsi/ginkgo/v2: [v2.4.0 → v2.9.1](https://github.com/onsi/ginkgo/v2/compare/v2.4.0...v2.9.1)
+- github.com/onsi/gomega: [v1.23.0 → v1.27.4](https://github.com/onsi/gomega/compare/v1.23.0...v1.27.4)
+- github.com/rogpeppe/go-internal: [v1.3.0 → v1.10.0](https://github.com/rogpeppe/go-internal/compare/v1.3.0...v1.10.0)
+- github.com/stretchr/objx: [v0.1.1 → v0.5.0](https://github.com/stretchr/objx/compare/v0.1.1...v0.5.0)
+- github.com/stretchr/testify: [v1.8.0 → v1.8.1](https://github.com/stretchr/testify/compare/v1.8.0...v1.8.1)
+- go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: v0.35.0 → v0.35.1
+- go.uber.org/goleak: v1.2.0 → v1.2.1
+- golang.org/x/mod: 86c51ed → v0.8.0
+- golang.org/x/net: v0.4.0 → v0.8.0
+- golang.org/x/oauth2: ee48083 → v0.4.0
+- golang.org/x/sys: v0.3.0 → v0.7.0
+- golang.org/x/term: v0.3.0 → v0.6.0
+- golang.org/x/text: v0.5.0 → v0.8.0
+- golang.org/x/tools: v0.1.12 → v0.7.0
+- golang.org/x/xerrors: 5ec99f8 → 04be3eb
+- google.golang.org/genproto: 142d8a6 → 76db087
+- google.golang.org/grpc: v1.51.0 → v1.54.0
+- gopkg.in/check.v1: 8fa4692 → 10cb982
+- k8s.io/api: v0.26.0 → v0.27.1
+- k8s.io/apimachinery: v0.26.0 → v0.27.1
+- k8s.io/client-go: v0.26.0 → v0.27.1
+- k8s.io/component-base: v0.26.0 → v0.27.1
+- k8s.io/klog/v2: v2.80.1 → v2.90.1
+- k8s.io/kube-openapi: 172d655 → 15aac26
+- k8s.io/kubelet: v0.26.0 → v0.27.1
+- k8s.io/utils: 1a15be2 → a36077c
+- sigs.k8s.io/json: f223a00 → bc3834c
+
+### Removed
+- github.com/PuerkitoBio/purell: [v1.1.1](https://github.com/PuerkitoBio/purell/tree/v1.1.1)
+- github.com/PuerkitoBio/urlesc: [de5bf2a](https://github.com/PuerkitoBio/urlesc/tree/de5bf2a)
+- github.com/elazarl/goproxy: [947c36d](https://github.com/elazarl/goproxy/tree/947c36d)
+- github.com/niemeyer/pretty: [a10e7ca](https://github.com/niemeyer/pretty/tree/a10e7ca)
+- gotest.tools/v3: v3.0.3
+com/go-logr/stdr: [v1.2.2](https://github.com/go-logr/stdr/tree/v1.2.2)
 - github.com/grpc-ecosystem/grpc-gateway/v2: [v2.7.0](https://github.com/grpc-ecosystem/grpc-gateway/v2/tree/v2.7.0)
 - go.opentelemetry.io/otel/exporters/otlp/internal/retry: v1.10.0
 - go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc: v1.10.0
