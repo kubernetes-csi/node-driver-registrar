@@ -9,6 +9,40 @@ updates:
     - "release-note-none"
     - "ok-to-test"
   open-pull-requests-limit: 10
+
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+  open-pull-requests-limit: 0
+  target-branch: "release-2.6"
+
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+  open-pull-requests-limit: 0
+  target-branch: "release-2.7"
+
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+  open-pull-requests-limit: 0
+  target-branch: "release-2.8"
+
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -18,3 +52,4 @@ updates:
     - "release-note-none"
     - "ok-to-test"
   open-pull-requests-limit: 10
+
