@@ -1,14 +1,5 @@
 version: 2
 updates:
-- package-ecosystem: gomod
-  directory: "/"
-  schedule:
-    interval: daily
-  labels:
-    - "area/dependency"
-    - "release-note-none"
-    - "ok-to-test"
-  open-pull-requests-limit: 10
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -18,3 +9,49 @@ updates:
     - "release-note-none"
     - "ok-to-test"
   open-pull-requests-limit: 10
+
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+  open-pull-requests-limit: 10
+
+# The list below needs to be maintained manually with every branch we support.
+# It allows dependabot to open security-only updates in supported branches.
+# ("open-pull-requests-limit: 0" blocks non-security updates)
+- package-ecosystem: gomod
+  open-pull-requests-limit: 0
+  target-branch: "release-2.6"
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+
+- package-ecosystem: gomod
+  open-pull-requests-limit: 0
+  target-branch: "release-2.7"
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
+
+- package-ecosystem: gomod
+  open-pull-requests-limit: 0
+  target-branch: "release-2.8"
+  directory: "/"
+  schedule:
+    interval: daily
+  labels:
+    - "area/dependency"
+    - "release-note-none"
+    - "ok-to-test"
