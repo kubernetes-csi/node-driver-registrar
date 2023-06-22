@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.13.0
 	golang.org/x/sys v0.9.0
-	google.golang.org/grpc v1.56.0
+	google.golang.org/grpc v1.56.1
 	k8s.io/client-go v0.27.3
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/kubelet v0.27.3
