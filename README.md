@@ -60,7 +60,7 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 
 * `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
 
-* `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process to register the driver with kubelet. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully. In the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
+* `--mode <mode>` (default: `--mode=registration`): DEPRECATED. If this is set to kubelet-registration-probe, the driver will exit successfully without registering with CSI. If set to any other value node-driver-registrar will do the kubelet plugin registration. This flag will be removed in a future major release because the mode kubelet-registration-probe is no longer needed.
 
 * `--enable-pprof`: Enable pprof profiling on the TCP network address specified by `--http-endpoint`.
 

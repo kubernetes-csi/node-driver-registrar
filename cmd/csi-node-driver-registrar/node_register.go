@@ -64,10 +64,6 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	klog.Infof("Registration Server started at: %s\n", socketPath)
 	grpcServer := grpc.NewServer()
 
-	// Before registering node-driver-registrar with the kubelet ensure that the lockfile doesn't exist
-	// a lockfile may exist because the container was forcefully shutdown
-	util.CleanupFile(registrationProbePath)
-
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
@@ -79,8 +75,6 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 		os.Exit(1)
 	}
 
-	// clean the file on graceful shutdown
-	util.CleanupFile(registrationProbePath)
 	// If gRPC server is gracefully shutdown, cleanup and exit
 	os.Exit(0)
 }
