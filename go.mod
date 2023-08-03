@@ -8,7 +8,7 @@ require (
 	google.golang.org/grpc v1.57.0
 	k8s.io/client-go v0.28.0-rc.0
 	k8s.io/klog/v2 v2.100.1
-	k8s.io/kubelet v0.27.4
+	k8s.io/kubelet v0.28.0-rc.0
 )
 
 require (
@@ -48,13 +48,3 @@ require (
 	k8s.io/component-base v0.28.0-rc.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 )
-
-replace k8s.io/api => k8s.io/api v0.28.0-rc.0
-
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.29.0-alpha.0
-
-replace k8s.io/client-go => k8s.io/client-go v0.28.0-rc.0
-
-replace k8s.io/component-base => k8s.io/component-base v0.28.0-rc.0
-
-replace k8s.io/kubelet => k8s.io/kubelet v0.28.0-rc.0
