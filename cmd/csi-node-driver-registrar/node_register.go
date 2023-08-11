@@ -30,7 +30,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
-	"github.com/kubernetes-csi/csi-lib-utils/metrics"
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
@@ -138,19 +137,18 @@ func httpServer(socketPath string, httpEndpoint string, csiDriverName string) {
 
 func checkLiveRegistrationSocket(socketFile, csiDriverName string) error {
 	klog.V(2).Infof("Attempting to open a gRPC connection with: %q", socketFile)
-	cmm := metrics.NewCSIMetricsManagerForSidecar("")
-	csiConn, err := connection.Connect(socketFile, cmm)
+	grpcConn, err := connection.ConnectWithoutMetrics(socketFile)
 	if err != nil {
 		return fmt.Errorf("error connecting to node-registrar socket %s: %v", socketFile, err)
 	}
 
-	defer closeGrpcConnection(socketFile, csiConn)
+	defer closeGrpcConnection(socketFile, grpcConn)
 
-	klog.V(1).Infof("Calling node registrar to check if it still responds")
+	klog.V(2).Infof("Calling node registrar to check if it still responds")
 	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
 	defer cancel()
 
-	client := registerapi.NewRegistrationClient(csiConn)
+	client := registerapi.NewRegistrationClient(grpcConn)
 
 	infoRequest := &registerapi.InfoRequest{}
 
