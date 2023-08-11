@@ -205,6 +205,7 @@ func main() {
 		klog.Errorf("error retreiving CSI driver name: %v", err)
 		os.Exit(1)
 	}
+	defer closeGrpcConnection(*csiAddress, csiConn)
 
 	klog.V(2).Infof("CSI driver name: %q", csiDriverName)
 	cmm.SetDriverName(csiDriverName)
