@@ -26,7 +26,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kubernetes-csi/csi-lib-utils/metrics"
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog/v2"
 
@@ -182,15 +181,12 @@ func main() {
 		klog.Warning("--connection-timeout is deprecated and will have no effect")
 	}
 
-	// Unused metrics manager, necessary for connection.Connect below
-	cmm := metrics.NewCSIMetricsManagerForSidecar("")
-
 	// Once https://github.com/container-storage-interface/spec/issues/159 is
 	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
 	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	klog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
-	csiConn, err := connection.Connect(*csiAddress, cmm)
+	csiConn, err := connection.ConnectWithoutMetrics(*csiAddress)
 	if err != nil {
 		klog.Errorf("error connecting to CSI driver: %v", err)
 		os.Exit(1)
@@ -205,9 +201,8 @@ func main() {
 		klog.Errorf("error retreiving CSI driver name: %v", err)
 		os.Exit(1)
 	}
-
 	klog.V(2).Infof("CSI driver name: %q", csiDriverName)
-	cmm.SetDriverName(csiDriverName)
+	defer closeGrpcConnection(*csiAddress, csiConn)
 
 	// Run forever
 	nodeRegister(csiDriverName, addr)

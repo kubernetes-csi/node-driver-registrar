@@ -73,6 +73,11 @@ func Connect(address string, metricsManager metrics.CSIMetricsManager, options .
 	return connect(address, metricsManager, []grpc.DialOption{grpc.WithTimeout(time.Second * 30)}, options)
 }
 
+// ConnectWithoutMetrics behaves exactly like Connect except no metrics are recorded.
+func ConnectWithoutMetrics(address string, options ...Option) (*grpc.ClientConn, error) {
+	return connect(address, nil, []grpc.DialOption{grpc.WithTimeout(time.Second * 30)}, options)
+}
+
 // Option is the type of all optional parameters for Connect.
 type Option func(o *options)
 
@@ -118,11 +123,14 @@ func connect(
 		grpc.WithInsecure(),                   // Don't use TLS, it's usually local Unix domain socket in a container.
 		grpc.WithBackoffMaxDelay(time.Second), // Retry every second after failure.
 		grpc.WithBlock(),                      // Block until connection succeeds.
-		grpc.WithChainUnaryInterceptor(
-			LogGRPC, // Log all messages.
-			ExtendedCSIMetricsManager{metricsManager}.RecordMetricsClientInterceptor, // Record metrics for each gRPC call.
-		),
 	)
+
+	interceptors := []grpc.UnaryClientInterceptor{LogGRPC}
+	if metricsManager != nil {
+		interceptors = append(interceptors, ExtendedCSIMetricsManager{metricsManager}.RecordMetricsClientInterceptor)
+	}
+	dialOptions = append(dialOptions, grpc.WithChainUnaryInterceptor(interceptors...))
+
 	unixPrefix := "unix://"
 	if strings.HasPrefix(address, "/") {
 		// It looks like filesystem path.
@@ -193,7 +201,7 @@ func LogGRPC(ctx context.Context, method string, req, reply interface{}, cc *grp
 	klog.V(5).Infof("GRPC call: %s", method)
 	klog.V(5).Infof("GRPC request: %s", protosanitizer.StripSecrets(req))
 	err := invoker(ctx, method, req, reply, cc, opts...)
-	cappedStr := fmt.Sprintf("%s", protosanitizer.StripSecrets(reply))
+	cappedStr := protosanitizer.StripSecrets(reply).String()
 	if maxLogChar > 0 && len(cappedStr) > maxLogChar {
 		cappedStr = cappedStr[:maxLogChar] + fmt.Sprintf(" [response body too large, log capped to %d chars]", maxLogChar)
 	}
