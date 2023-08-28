@@ -27,6 +27,7 @@ import (
 
 	"github.com/kubernetes-csi/csi-lib-utils/metrics"
 	"github.com/kubernetes-csi/csi-lib-utils/protosanitizer"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"k8s.io/klog/v2"
 )
@@ -56,6 +57,8 @@ func SetMaxGRPCLogLength(characterCount int) {
 //
 // The function tries to connect for 30 seconds, and returns an error if no connection has been established at that point.
 // The function automatically disables TLS and adds interceptor for logging of all gRPC messages at level 5.
+// If the metricsManager is 'nil', no metrics will be recorded on the gRPC calls.
+// The function behaviour can be tweaked with options.
 //
 // For a connection to a Unix Domain socket, the behavior after
 // loosing the connection is configurable. The default is to
@@ -70,12 +73,20 @@ func SetMaxGRPCLogLength(characterCount int) {
 // For other connections, the default behavior from gRPC is used and
 // loss of connection is not detected reliably.
 func Connect(address string, metricsManager metrics.CSIMetricsManager, options ...Option) (*grpc.ClientConn, error) {
-	return connect(address, metricsManager, []grpc.DialOption{grpc.WithTimeout(time.Second * 30)}, options)
+	// Prepend default options
+	options = append([]Option{WithTimeout(time.Second * 30)}, options...)
+	if metricsManager != nil {
+		options = append([]Option{WithMetrics(metricsManager)}, options...)
+	}
+	return connect(address, options)
 }
 
 // ConnectWithoutMetrics behaves exactly like Connect except no metrics are recorded.
+// This function is deprecated, prefer using Connect with `nil` as the metricsManager.
 func ConnectWithoutMetrics(address string, options ...Option) (*grpc.ClientConn, error) {
-	return connect(address, nil, []grpc.DialOption{grpc.WithTimeout(time.Second * 30)}, options)
+	// Prepend default options
+	options = append([]Option{WithTimeout(time.Second * 30)}, options...)
+	return connect(address, options)
 }
 
 // Option is the type of all optional parameters for Connect.
@@ -105,29 +116,59 @@ func ExitOnConnectionLoss() func() bool {
 	}
 }
 
+// WithTimeout adds a configurable timeout on the gRPC calls.
+func WithTimeout(timeout time.Duration) Option {
+	return func(o *options) {
+		o.timeout = timeout
+	}
+}
+
+// WithMetrics enables the recording of metrics on the gRPC calls with the provided CSIMetricsManager.
+func WithMetrics(metricsManager metrics.CSIMetricsManager) Option {
+	return func(o *options) {
+		o.metricsManager = metricsManager
+	}
+}
+
+// WithOtelTracing enables the recording of traces on the gRPC calls with opentelemetry gRPC interceptor.
+func WithOtelTracing() Option {
+	return func(o *options) {
+		o.enableOtelTracing = true
+	}
+}
+
 type options struct {
-	reconnect func() bool
+	reconnect         func() bool
+	timeout           time.Duration
+	metricsManager    metrics.CSIMetricsManager
+	enableOtelTracing bool
 }
 
 // connect is the internal implementation of Connect. It has more options to enable testing.
 func connect(
 	address string,
-	metricsManager metrics.CSIMetricsManager,
-	dialOptions []grpc.DialOption, connectOptions []Option) (*grpc.ClientConn, error) {
+	connectOptions []Option) (*grpc.ClientConn, error) {
 	var o options
 	for _, option := range connectOptions {
 		option(&o)
 	}
 
-	dialOptions = append(dialOptions,
+	dialOptions := []grpc.DialOption{
 		grpc.WithInsecure(),                   // Don't use TLS, it's usually local Unix domain socket in a container.
 		grpc.WithBackoffMaxDelay(time.Second), // Retry every second after failure.
 		grpc.WithBlock(),                      // Block until connection succeeds.
-	)
+	}
+
+	if o.timeout > 0 {
+		dialOptions = append(dialOptions, grpc.WithTimeout(o.timeout))
+	}
 
 	interceptors := []grpc.UnaryClientInterceptor{LogGRPC}
-	if metricsManager != nil {
-		interceptors = append(interceptors, ExtendedCSIMetricsManager{metricsManager}.RecordMetricsClientInterceptor)
+	if o.metricsManager != nil {
+		interceptors = append(interceptors, ExtendedCSIMetricsManager{o.metricsManager}.RecordMetricsClientInterceptor)
+	}
+	if o.enableOtelTracing {
+		interceptors = append(interceptors, otelgrpc.UnaryClientInterceptor())
 	}
 	dialOptions = append(dialOptions, grpc.WithChainUnaryInterceptor(interceptors...))
 
