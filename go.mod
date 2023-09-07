@@ -3,7 +3,7 @@ module github.com/kubernetes-csi/node-driver-registrar
 go 1.20
 
 require (
-	github.com/kubernetes-csi/csi-lib-utils v0.15.0
+	github.com/kubernetes-csi/csi-lib-utils v0.14.0
 	golang.org/x/sys v0.12.0
 	google.golang.org/grpc v1.57.0
 	k8s.io/client-go v0.28.0
@@ -18,7 +18,6 @@ require (
 	github.com/container-storage-interface/spec v1.8.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
-	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
@@ -40,10 +39,6 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.41.0 // indirect
-	go.opentelemetry.io/otel v1.15.0 // indirect
-	go.opentelemetry.io/otel/metric v0.38.0 // indirect
-	go.opentelemetry.io/otel/trace v1.15.0 // indirect
 	golang.org/x/net v0.13.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
