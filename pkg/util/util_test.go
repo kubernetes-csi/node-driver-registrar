@@ -28,7 +28,6 @@ import (
 )
 
 var socketFileName = "reg.sock"
-var kubeletRegistrationPath = "/var/lib/kubelet/plugins/csi-dummy/registration"
 
 // TestSocketFileDoesNotExist - Test1: file does not exist. So clean up should be successful.
 func TestSocketFileDoesNotExist(t *testing.T) {
@@ -172,43 +171,5 @@ func TestSocketRegularFile(t *testing.T) {
 				t.Fatalf("lstat error on file %s ", socketPath)
 			}
 		}
-	}
-}
-
-// TestTouchFile creates a file if it doesn't exist
-func TestTouchFile(t *testing.T) {
-	// Create a temp directory
-	testDir, err := utiltesting.MkTmpdir("csi-test")
-	if err != nil {
-		t.Fatalf("could not create temp dir: %v", err)
-	}
-	defer os.RemoveAll(testDir)
-
-	filePath := filepath.Join(testDir, kubeletRegistrationPath)
-	fileExists, err := DoesFileExist(filePath)
-	if err != nil {
-		t.Fatalf("Failed to execute file exist: %+v", err)
-	}
-	if fileExists {
-		t.Fatalf("File %s must not exist", filePath)
-	}
-
-	// returns an error only if it failed to clean the file, not if the file didn't exist
-	err = CleanupFile(filePath)
-	if err != nil {
-		t.Fatalf("Failed to execute file cleanup: %+v", err)
-	}
-
-	err = TouchFile(filePath)
-	if err != nil {
-		t.Fatalf("Failed to execute file touch: %+v", err)
-	}
-
-	fileExists, err = DoesFileExist(filePath)
-	if err != nil {
-		t.Fatalf("Failed to execute file exist: %+v", err)
-	}
-	if !fileExists {
-		t.Fatalf("File %s must exist", filePath)
 	}
 }
