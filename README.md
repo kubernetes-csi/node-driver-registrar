@@ -13,12 +13,14 @@ the CSI calls on.
 
 This information reflects the head of this branch.
 
-| Compatible with CSI Version                                                                | Container Image                                  | [Min K8s Version](https://kubernetes-csi.github.io/docs/kubernetes-compatibility.html#minimum-version) |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| [CSI Spec v1.5.0](https://github.com/container-storage-interface/spec/releases/tag/v1.5.0) | registry.k8s.io/sig-storage/csi-node-driver-registrar | 1.13                                                                                                   |
+| Compatible with CSI Version                                                                | Container Image                                  | [Min K8s Version](https://kubernetes-csi.github.io/docs/project-policies.html#minimum-version) | [Recommended K8s Version](https://kubernetes-csi.github.io/docs/project-policies.html#recommended-version) |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------ |------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| [CSI Spec v1.5.0](https://github.com/container-storage-interface/spec/releases/tag/v1.5.0) | registry.k8s.io/sig-storage/csi-node-driver-registrar | 1.13 | 1.23.10*                                                                                                  |                                                                                                      |
 
 For release-0.4 and below, please refer to the [driver-registrar
 repository](https://github.com/kubernetes-csi/driver-registrar).
+
+*) On Windows, Kubernetes v1.23.10, v1.24.4, v1.25.0 or newer is required to [fix handling of registration sockets](https://github.com/kubernetes/kubernetes/pull/110075). On Linux, v1.13 is the recommended version.
 
 ## Usage
 
