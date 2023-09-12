@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
@@ -103,14 +104,15 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
-	klog.Infof("Received GetInfo call: %+v", req)
+	logger := klog.FromContext(ctx)
+	logger.Info("Received GetInfo call", "request", req)
 
 	// on successful registration, create the registration probe file
 	err := util.TouchFile(registrationProbePath)
 	if err != nil {
-		klog.ErrorS(err, "Failed to create registration probe file", "registrationProbePath", registrationProbePath)
+		logger.Error(err, "Failed to create registration probe file", "registrationProbePath", registrationProbePath)
 	} else {
-		klog.InfoS("Kubelet registration probe created", "path", registrationProbePath)
+		logger.Info("Kubelet registration probe created", "path", registrationProbePath)
 	}
 
 	return &registerapi.PluginInfo{
@@ -122,9 +124,10 @@ func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRe
 }
 
 func (e registrationServer) NotifyRegistrationStatus(ctx context.Context, status *registerapi.RegistrationStatus) (*registerapi.RegistrationStatusResponse, error) {
-	klog.Infof("Received NotifyRegistrationStatus call: %+v", status)
+	logger := klog.FromContext(ctx)
+	logger.Info("Received NotifyRegistrationStatus call", "status", status)
 	if !status.PluginRegistered {
-		klog.Errorf("Registration process failed with error: %+v, restarting registration container.", status.Error)
+		logger.Error(errors.New(status.Error), "Registration process failed with error, restarting registration container")
 		os.Exit(1)
 	}
 
@@ -136,32 +139,12 @@ func modeIsKubeletRegistrationProbe() bool {
 }
 
 func main() {
-	// Add logging flags. Both klog.InitFlags and logsapi.AddFlags add some
-	// flags (v, vmodule). We prefer the one from logsapi because that also
-	// updates klog, but not the other way around.
-	//
-	// That logsapi only supports pflag is sub-optimal. Copying from
-	// pflag.FlagSet with VisitAll works, but currently leads to one
-	// problem: -help will call String on the zero value for the flags
-	// to determine the default value, which is not supported by logsapi
-	// and leads to some warnings at the end of -help:
-	//
-	//   panic calling String method on zero v1.verbosityLevelPflag for flag v: runtime error: invalid memory address or nil pointer dereference
-	//   panic calling String method on zero v1.vmoduleConfigurationPFlag for flag vmodule: runtime error: invalid memory address or nil pointer dereference
-	//
-	// Will be fixed by https://github.com/kubernetes/kubernetes/pull/114680
 	c := logsapi.NewLoggingConfiguration()
 	var pFlagSet pflag.FlagSet
 	logsapi.AddFlags(c, &pFlagSet)
-	pFlagSet.VisitAll(func(f *pflag.Flag) {
-		flag.Var(f.Value, f.Name, f.Usage)
-	})
 	var flagSet flag.FlagSet
-	klog.InitFlags(&flagSet)
-	flagSet.VisitAll(func(f *flag.Flag) {
-		if flag.Lookup(f.Name) != nil {
-			return
-		}
+	logsapi.AddGoFlags(c, &flagSet)
+	pFlagSet.VisitAll(func(f *pflag.Flag) {
 		flag.Var(f.Value, f.Name, f.Usage)
 	})
 
@@ -184,12 +167,13 @@ func main() {
 
 	// Switch to desired output format.
 	if err := logsapi.ValidateAndApply(c, fg); err != nil {
-		klog.Fatal(err)
+		klog.ErrorS(err, "")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
 	if *kubeletRegistrationPath == "" {
-		klog.Error("kubelet-registration-path is a required parameter")
-		os.Exit(1)
+		klog.ErrorS(nil, "kubelet-registration-path is a required parameter")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	// set after we made sure that *kubeletRegistrationPath exists
 	kubeletRegistrationPathDir := filepath.Dir(*kubeletRegistrationPath)
@@ -199,23 +183,23 @@ func main() {
 	if modeIsKubeletRegistrationProbe() {
 		lockfileExists, err := util.DoesFileExist(registrationProbePath)
 		if err != nil {
-			klog.Fatalf("Failed to check if registration path exists, registrationProbePath=%s err=%v", registrationProbePath, err)
-			os.Exit(1)
+			klog.ErrorS(err, "Failed to check if registration path exists", "registrationProbePath", registrationProbePath)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
 		if !lockfileExists {
-			klog.Fatalf("Kubelet plugin registration hasn't succeeded yet, file=%s doesn't exist.", registrationProbePath)
-			os.Exit(1)
+			klog.ErrorS(err, "Kubelet plugin registration hasn't succeeded yets, file doesn't exist", "registrationProbePath", registrationProbePath)
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 		}
-		klog.Infof("Kubelet plugin registration succeeded.")
+		klog.InfoS("Kubelet plugin registration succeeded")
 		os.Exit(0)
 	}
 
-	klog.Infof("Version: %s", version)
-	klog.Infof("Running node-driver-registrar in mode=%s", *mode)
+	klog.InfoS("Version", "version", version)
+	klog.InfoS("Running node-driver-registrar", "mode", *mode)
 
 	if *healthzPort > 0 && *httpEndpoint != "" {
-		klog.Error("only one of `--health-port` and `--http-endpoint` can be set.")
-		os.Exit(1)
+		klog.ErrorS(nil, "Only one of `--health-port` and `--http-endpoint` can be set")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	var addr string
 	if *healthzPort > 0 {
@@ -225,7 +209,7 @@ func main() {
 	}
 
 	if *connectionTimeout != 0 {
-		klog.Warning("--connection-timeout is deprecated and will have no effect")
+		klog.InfoS("--connection-timeout is deprecated and will have no effect")
 	}
 
 	// Unused metrics manager, necessary for connection.Connect below
@@ -235,24 +219,24 @@ func main() {
 	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
 	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
-	klog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
+	klog.V(1).InfoS("Attempting to open a gRPC connection", "csiAddress", *csiAddress)
 	csiConn, err := connection.Connect(*csiAddress, cmm)
 	if err != nil {
-		klog.Errorf("error connecting to CSI driver: %v", err)
-		os.Exit(1)
+		klog.ErrorS(err, "Error connecting to CSI driver")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	klog.V(1).Infof("Calling CSI driver to discover driver name")
+	klog.V(1).InfoS("Calling CSI driver to discover driver name")
 	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
 	defer cancel()
 
 	csiDriverName, err := csirpc.GetDriverName(ctx, csiConn)
 	if err != nil {
-		klog.Errorf("error retreiving CSI driver name: %v", err)
-		os.Exit(1)
+		klog.ErrorS(err, "Error retreiving CSI driver name")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	klog.V(2).Infof("CSI driver name: %q", csiDriverName)
+	klog.V(2).InfoS("CSI driver name", "csiDriverName", csiDriverName)
 	cmm.SetDriverName(csiDriverName)
 
 	// Run forever
