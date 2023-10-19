@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -28,6 +29,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/kubernetes-csi/csi-lib-utils/connection"
 	"github.com/kubernetes-csi/node-driver-registrar/pkg/util"
 	"k8s.io/klog/v2"
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
@@ -62,14 +64,10 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	klog.InfoS("Registration Server started", "socketPath", socketPath)
 	grpcServer := grpc.NewServer()
 
-	// Before registering node-driver-registrar with the kubelet ensure that the lockfile doesn't exist
-	// a lockfile may exist because the container was forcefully shutdown
-	util.CleanupFile(registrationProbePath)
-
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
-	go httpServer(socketPath, httpEndpoint)
+	go httpServer(socketPath, httpEndpoint, csiDriverName)
 	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
@@ -77,8 +75,6 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
-	// clean the file on graceful shutdown
-	util.CleanupFile(registrationProbePath)
 	// If gRPC server is gracefully shutdown, cleanup and exit
 	os.Exit(0)
 }
@@ -87,7 +83,7 @@ func buildSocketPath(csiDriverName string) string {
 	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
 }
 
-func httpServer(socketPath string, httpEndpoint string) {
+func httpServer(socketPath string, httpEndpoint string, csiDriverName string) {
 	if httpEndpoint == "" {
 		klog.InfoS("Skipping HTTP server")
 		return
@@ -99,9 +95,16 @@ func httpServer(socketPath string, httpEndpoint string) {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		socketExists, err := util.DoesSocketExist(socketPath)
 		if err == nil && socketExists {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`ok`))
-			klog.V(5).InfoS("Health check succeeded")
+			grpcSocketCheckError := checkLiveRegistrationSocket(socketPath, csiDriverName)
+			if grpcSocketCheckError != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(grpcSocketCheckError.Error()))
+				klog.ErrorS(grpcSocketCheckError, "Health check failed")
+			} else {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`ok`))
+				klog.V(5).InfoS("Health check succeeded")
+			}
 		} else if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
@@ -125,6 +128,42 @@ func httpServer(socketPath string, httpEndpoint string) {
 
 	klog.ErrorS(http.ListenAndServe(httpEndpoint, mux), "")
 	klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+}
+
+func checkLiveRegistrationSocket(socketFile, csiDriverName string) error {
+	klog.V(2).InfoS("Attempting to open a gRPC connection", "socketfile", socketFile)
+	grpcConn, err := connection.ConnectWithoutMetrics(socketFile)
+	if err != nil {
+		return fmt.Errorf("error connecting to node-registrar socket %s: %v", socketFile, err)
+	}
+
+	defer closeGrpcConnection(socketFile, grpcConn)
+
+	klog.V(2).InfoS("Calling node registrar to check if it still responds")
+	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
+	defer cancel()
+
+	client := registerapi.NewRegistrationClient(grpcConn)
+
+	infoRequest := &registerapi.InfoRequest{}
+
+	info, err := client.GetInfo(ctx, infoRequest)
+	if err != nil {
+		return fmt.Errorf("error getting info from node-registrar socket: %v", err)
+	}
+
+	if info.Name == csiDriverName {
+		return nil
+	}
+	return fmt.Errorf("invalid driver name %s", info.Name)
+}
+
+func closeGrpcConnection(socketFile string, conn *grpc.ClientConn) {
+	err := conn.Close()
+	if err != nil {
+		klog.ErrorS(err, "Error closing socket", "socketfile", socketFile)
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 }
 
 func removeRegSocket(csiDriverName string) {

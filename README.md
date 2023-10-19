@@ -13,12 +13,14 @@ the CSI calls on.
 
 This information reflects the head of this branch.
 
-| Compatible with CSI Version                                                                | Container Image                                  | [Min K8s Version](https://kubernetes-csi.github.io/docs/kubernetes-compatibility.html#minimum-version) |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| [CSI Spec v1.5.0](https://github.com/container-storage-interface/spec/releases/tag/v1.5.0) | k8s.gcr.io/sig-storage/csi-node-driver-registrar | 1.13                                                                                                   |
+| Compatible with CSI Version                                                                | Container Image                                  | [Min K8s Version](https://kubernetes-csi.github.io/docs/project-policies.html#minimum-version) | [Recommended K8s Version](https://kubernetes-csi.github.io/docs/project-policies.html#recommended-version) |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------ |------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| [CSI Spec v1.5.0](https://github.com/container-storage-interface/spec/releases/tag/v1.5.0) | registry.k8s.io/sig-storage/csi-node-driver-registrar | 1.13 | 1.23.10*                                                                                                  |                                                                                                      |
 
 For release-0.4 and below, please refer to the [driver-registrar
 repository](https://github.com/kubernetes-csi/driver-registrar).
+
+*) On Windows, Kubernetes v1.23.10, v1.24.4, v1.25.0 or newer is required to [fix handling of registration sockets](https://github.com/kubernetes/kubernetes/pull/110075). On Linux, v1.13 is the recommended version.
 
 ## Usage
 
@@ -60,7 +62,7 @@ There are two UNIX domain sockets used by the node-driver-registrar:
 
 * `--timeout <duration>`: Timeout of all calls to CSI driver. It should be set to a value that accommodates the `GetDriverName` calls. 1 second is used by default.
 
-* `--mode <mode>` (default: `--mode=registration`): The running mode of node-driver-registrar. `registration` runs node-driver-registrar as a long running process to register the driver with kubelet. `kubelet-registration-probe` runs as a health check and returns a status code of 0 if the driver was registered successfully. In the probe definition make sure that the value of `--kubelet-registration-path` is the same as in the container.
+* `--mode <mode>` (default: `--mode=registration`): DEPRECATED. If this is set to kubelet-registration-probe, the driver will exit successfully without registering with CSI. If set to any other value node-driver-registrar will do the kubelet plugin registration. This flag will be removed in a future major release because the mode kubelet-registration-probe is no longer needed.
 
 * `--enable-pprof`: Enable pprof profiling on the TCP network address specified by `--http-endpoint`.
 
