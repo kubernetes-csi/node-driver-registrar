@@ -1,3 +1,42 @@
+# Release notes for v2.9.1
+
+[Documentation](https://kubernetes-csi.github.io)
+
+# Changelog since v2.9.0
+
+## Changes by Kind
+
+### Bug or Regression
+
+- Bump google.golang.org/grpc from v1.58.0 to v1.59.0 to fix CVE-2023-44487. ([#352](https://github.com/kubernetes-csi/node-driver-registrar/pull/352), [@songjiaxun](https://github.com/songjiaxun))
+
+### Uncategorized
+
+- CVE fixes: CVE-2023-3978 ([#345](https://github.com/kubernetes-csi/node-driver-registrar/pull/345), [@dannawang0221](https://github.com/dannawang0221))
+
+## Dependencies
+
+### Added
+_Nothing has changed._
+
+### Changed
+- cloud.google.com/go/compute: v1.21.0 → v1.23.0
+- github.com/golang/glog: [v1.1.0 → v1.1.2](https://github.com/golang/glog/compare/v1.1.0...v1.1.2)
+- github.com/google/uuid: [v1.3.0 → v1.3.1](https://github.com/google/uuid/compare/v1.3.0...v1.3.1)
+- golang.org/x/crypto: v0.11.0 → v0.14.0
+- golang.org/x/net: v0.13.0 → v0.17.0
+- golang.org/x/oauth2: v0.10.0 → v0.11.0
+- golang.org/x/sys: v0.12.0 → v0.13.0
+- golang.org/x/term: v0.10.0 → v0.13.0
+- golang.org/x/text: v0.11.0 → v0.13.0
+- google.golang.org/genproto/googleapis/api: 782d3b1 → b8732ec
+- google.golang.org/genproto/googleapis/rpc: 782d3b1 → b8732ec
+- google.golang.org/genproto: 782d3b1 → b8732ec
+- google.golang.org/grpc: v1.58.0 → v1.59.0
+
+### Removed
+_Nothing has changed._
+
 # Release notes for v2.9.0
 
 [Documentation](https://kubernetes-csi.github.io)
