@@ -13,9 +13,10 @@
 // limitations under the License.
 
 /*
-Package codes defines the canonical error codes used by OpenTelemetry.
+Package otelgrpc is the instrumentation library for [google.golang.org/grpc].
 
-It conforms to [the OpenTelemetry
-specification](https://github.com/open-telemetry/opentelemetry-specification/blob/v1.20.0/specification/trace/api.md#set-status).
+Use [NewClientHandler] with [grpc.WithStatsHandler] to instrument a gRPC client.
+
+Use [NewServerHandler] with [grpc.StatsHandler] to instrument a gRPC server.
 */
-package codes // import "go.opentelemetry.io/otel/codes"
+package otelgrpc // import "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
