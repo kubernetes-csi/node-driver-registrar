@@ -6,9 +6,9 @@ require (
 	github.com/kubernetes-csi/csi-lib-utils v0.16.0
 	golang.org/x/sys v0.14.0
 	google.golang.org/grpc v1.59.0
-	k8s.io/client-go v0.28.3
+	k8s.io/client-go v0.28.4
 	k8s.io/klog/v2 v2.110.1
-	k8s.io/kubelet v0.28.3
+	k8s.io/kubelet v0.28.4
 )
 
 require (
@@ -49,7 +49,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.28.3 // indirect
-	k8s.io/component-base v0.28.3 // indirect
+	k8s.io/apimachinery v0.28.4 // indirect
+	k8s.io/component-base v0.28.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 )
