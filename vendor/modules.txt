@@ -249,15 +249,15 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/apimachinery v0.29.0-rc.1
+# k8s.io/apimachinery v0.30.0-alpha.0
 ## explicit; go 1.21
 k8s.io/apimachinery/pkg/util/sets
 k8s.io/apimachinery/pkg/util/version
 k8s.io/apimachinery/pkg/version
-# k8s.io/client-go v0.29.0-rc.1
+# k8s.io/client-go v0.30.0-alpha.0
 ## explicit; go 1.21
 k8s.io/client-go/util/testing
-# k8s.io/component-base v0.29.0-rc.1
+# k8s.io/component-base v0.30.0-alpha.0
 ## explicit; go 1.21
 k8s.io/component-base/metrics
 k8s.io/component-base/metrics/prometheusextension
@@ -280,6 +280,6 @@ k8s.io/kube-openapi/pkg/internal
 k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json
 k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubelet v0.29.0-rc.1
+# k8s.io/kubelet v0.30.0-alpha.0
 ## explicit; go 1.21
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
