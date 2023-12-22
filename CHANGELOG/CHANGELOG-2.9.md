@@ -2,6 +2,34 @@
 
 [Documentation](https://kubernetes-csi.github.io)
 
+## Changes by Kind
+
+### Uncategorized
+
+- Bump go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc from 0.41.0 to 0.46.0 to fix CVE-2023-47108 ([#357](https://github.com/kubernetes-csi/node-driver-registrar/pull/357), [@pwschuurman](https://github.com/pwschuurman))
+
+## Dependencies
+
+### Added
+_Nothing has changed._
+
+### Changed
+- github.com/go-logr/logr: [v1.2.4 → v1.3.0](https://github.com/go-logr/logr/compare/v1.2.4...v1.3.0)
+- github.com/google/go-cmp: [v0.5.9 → v0.6.0](https://github.com/google/go-cmp/compare/v0.5.9...v0.6.0)
+- github.com/kubernetes-csi/csi-lib-utils: [v0.15.0 → v0.15.1](https://github.com/kubernetes-csi/csi-lib-utils/compare/v0.15.0...v0.15.1)
+- github.com/stretchr/testify: [v1.8.2 → v1.8.4](https://github.com/stretchr/testify/compare/v1.8.2...v1.8.4)
+- go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: v0.41.0 → v0.46.0
+- go.opentelemetry.io/otel/metric: v0.38.0 → v1.20.0
+- go.opentelemetry.io/otel/trace: v1.15.0 → v1.20.0
+- go.opentelemetry.io/otel: v1.15.0 → v1.20.0
+
+### Removed
+_Nothing has changed._
+
+# Release notes for v2.9.2
+
+[Documentation](https://kubernetes-csi.github.io)
+
 # Changelog since v2.9.1
 
 ## Changes by Kind
