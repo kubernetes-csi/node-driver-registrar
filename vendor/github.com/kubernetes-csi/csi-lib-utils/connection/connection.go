@@ -154,9 +154,10 @@ func connect(
 	}
 
 	dialOptions := []grpc.DialOption{
-		grpc.WithInsecure(),                   // Don't use TLS, it's usually local Unix domain socket in a container.
-		grpc.WithBackoffMaxDelay(time.Second), // Retry every second after failure.
-		grpc.WithBlock(),                      // Block until connection succeeds.
+		grpc.WithInsecure(),                    // Don't use TLS, it's usually local Unix domain socket in a container.
+		grpc.WithBackoffMaxDelay(time.Second),  // Retry every second after failure.
+		grpc.WithBlock(),                       // Block until connection succeeds.
+		grpc.WithIdleTimeout(time.Duration(0)), // Never close connection because of inactivity.
 	}
 
 	if o.timeout > 0 {
