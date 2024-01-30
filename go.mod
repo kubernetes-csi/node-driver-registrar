@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.17.0
 	golang.org/x/sys v0.16.0
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.61.0
 	k8s.io/client-go v0.29.1
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kubelet v0.29.1
@@ -26,7 +26,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
