@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.17.0
-	golang.org/x/sys v0.16.0
+	golang.org/x/sys v0.17.0
 	google.golang.org/grpc v1.61.0
 	k8s.io/client-go v0.29.1
 	k8s.io/klog/v2 v2.120.1
