@@ -155,14 +155,15 @@ func main() {
 	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	klog.V(1).Infof("Attempting to open a gRPC connection with: %q", *csiAddress)
-	csiConn, err := connection.ConnectWithoutMetrics(*csiAddress)
+	ctx := context.Background()
+	csiConn, err := connection.ConnectWithoutMetrics(ctx, *csiAddress)
 	if err != nil {
 		klog.Errorf("error connecting to CSI driver: %v", err)
 		os.Exit(1)
 	}
 
 	klog.V(1).Infof("Calling CSI driver to discover driver name")
-	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
+	ctx, cancel := context.WithTimeout(ctx, *operationTimeout)
 	defer cancel()
 
 	csiDriverName, err := csirpc.GetDriverName(ctx, csiConn)
@@ -174,5 +175,5 @@ func main() {
 	defer closeGrpcConnection(*csiAddress, csiConn)
 
 	// Run forever
-	nodeRegister(csiDriverName, addr)
+	nodeRegister(ctx, csiDriverName, addr)
 }
