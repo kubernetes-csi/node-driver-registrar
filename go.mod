@@ -7,10 +7,11 @@ require (
 	golang.org/x/sys v0.16.0
 	google.golang.org/grpc v1.61.0
 	k8s.io/client-go v0.29.1
-  k8s.io/component-base v0.29.1
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kubelet v0.29.1
 )
+
+require k8s.io/component-base v0.29.1
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
