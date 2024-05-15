@@ -35,7 +35,7 @@ import (
 	registerapi "k8s.io/kubelet/pkg/apis/pluginregistration/v1"
 )
 
-func nodeRegister(csiDriverName, httpEndpoint string) {
+func nodeRegister(ctx context.Context, csiDriverName, httpEndpoint string) {
 	// When kubeletRegistrationPath is specified then driver-registrar ONLY acts
 	// as gRPC server which replies to registration requests initiated by kubelet's
 	// plugins watcher infrastructure. Node labeling is done by kubelet's csi code.
@@ -67,7 +67,7 @@ func nodeRegister(csiDriverName, httpEndpoint string) {
 	// Registers kubelet plugin watcher api.
 	registerapi.RegisterRegistrationServer(grpcServer, registrar)
 
-	go httpServer(socketPath, httpEndpoint, csiDriverName)
+	go httpServer(ctx, socketPath, httpEndpoint, csiDriverName)
 	go removeRegSocket(csiDriverName)
 	// Starts service
 	if err := grpcServer.Serve(lis); err != nil {
@@ -83,7 +83,7 @@ func buildSocketPath(csiDriverName string) string {
 	return fmt.Sprintf("%s/%s-reg.sock", *pluginRegistrationPath, csiDriverName)
 }
 
-func httpServer(socketPath string, httpEndpoint string, csiDriverName string) {
+func httpServer(ctx context.Context, socketPath string, httpEndpoint string, csiDriverName string) {
 	if httpEndpoint == "" {
 		klog.InfoS("Skipping HTTP server")
 		return
@@ -95,7 +95,7 @@ func httpServer(socketPath string, httpEndpoint string, csiDriverName string) {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		socketExists, err := util.DoesSocketExist(socketPath)
 		if err == nil && socketExists {
-			grpcSocketCheckError := checkLiveRegistrationSocket(socketPath, csiDriverName)
+			grpcSocketCheckError := checkLiveRegistrationSocket(ctx, socketPath, csiDriverName)
 			if grpcSocketCheckError != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(grpcSocketCheckError.Error()))
@@ -130,9 +130,9 @@ func httpServer(socketPath string, httpEndpoint string, csiDriverName string) {
 	klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 }
 
-func checkLiveRegistrationSocket(socketFile, csiDriverName string) error {
+func checkLiveRegistrationSocket(ctx context.Context, socketFile, csiDriverName string) error {
 	klog.V(2).InfoS("Attempting to open a gRPC connection", "socketfile", socketFile)
-	grpcConn, err := connection.ConnectWithoutMetrics(socketFile)
+	grpcConn, err := connection.ConnectWithoutMetrics(ctx, socketFile)
 	if err != nil {
 		return fmt.Errorf("error connecting to node-registrar socket %s: %v", socketFile, err)
 	}
