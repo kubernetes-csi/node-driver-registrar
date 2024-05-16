@@ -18,3 +18,4 @@ CMDS=csi-node-driver-registrar
 all: build
 
 include release-tools/build.make
+
