@@ -24,7 +24,8 @@ import (
 	"testing"
 
 	utiltesting "k8s.io/client-go/util/testing"
-	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/ktesting"
+	_ "k8s.io/klog/v2/ktesting/init"
 )
 
 var socketFileName = "reg.sock"
@@ -88,9 +89,10 @@ func TestSocketPathSimple(t *testing.T) {
 
 	socketPath := filepath.Join(testDir, socketFileName)
 
+	logger, _ := ktesting.NewTestContext(t)
 	_, err = net.Listen("unix", socketPath)
 	if err != nil {
-		klog.ErrorS(err, "Failed to listen on socket", "socketPath", socketPath)
+		logger.Error(err, "Failed to listen on socket", "socketPath", socketPath)
 		os.Exit(1)
 	}
 

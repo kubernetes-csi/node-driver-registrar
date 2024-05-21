@@ -19,3 +19,4 @@ all: build
 
 include release-tools/build.make
 
+test: test-logcheck
