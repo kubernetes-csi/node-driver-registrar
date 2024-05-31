@@ -6,12 +6,12 @@ require (
 	github.com/kubernetes-csi/csi-lib-utils v0.18.0
 	golang.org/x/sys v0.20.0
 	google.golang.org/grpc v1.63.2
-	k8s.io/client-go v0.30.0
+	k8s.io/client-go v0.30.1
 	k8s.io/klog/v2 v2.120.1
-	k8s.io/kubelet v0.30.0
+	k8s.io/kubelet v0.30.1
 )
 
-require k8s.io/component-base v0.30.0
+require k8s.io/component-base v0.30.1
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -57,7 +57,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.30.0 // indirect
+	k8s.io/apimachinery v0.30.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240430033511-f0e62f92d13f // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
