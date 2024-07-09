@@ -178,10 +178,10 @@ func main() {
 	}
 
 	logger.V(1).Info("Calling CSI driver to discover driver name")
-	ctx, cancel := context.WithTimeout(ctx, *operationTimeout)
+	getNameCtx, cancel := context.WithTimeout(ctx, *operationTimeout)
 	defer cancel()
 
-	csiDriverName, err := csirpc.GetDriverName(ctx, csiConn)
+	csiDriverName, err := csirpc.GetDriverName(getNameCtx, csiConn)
 	if err != nil {
 		logger.Error(err, "Error retreiving CSI driver name")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
