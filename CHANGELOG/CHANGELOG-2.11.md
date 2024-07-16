@@ -1,3 +1,25 @@
+# Release notes for v2.11.1
+
+[Documentation](https://kubernetes-csi.github.io)
+
+## Changes by Kind
+
+### Bug or Regression
+
+- Fixed node-driver-registrar exiting after 1 second. ([#426](https://github.com/kubernetes-csi/node-driver-registrar/pull/426), [@jsafrane](https://github.com/jsafrane))
+- Rebuilt with fixed Windows base images, which fixes [#415](https://github.com/kubernetes-csi/node-driver-registrar/issues/415).
+
+## Dependencies
+
+### Added
+_Nothing has changed._
+
+### Changed
+_Nothing has changed._
+
+### Removed
+_Nothing has changed._
+
 # Release notes for v2.11.0
 
 [Documentation](https://kubernetes-csi.github.io)
