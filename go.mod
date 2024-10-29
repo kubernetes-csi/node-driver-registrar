@@ -1,6 +1,6 @@
 module github.com/kubernetes-csi/node-driver-registrar
 
-go 1.22.5
+go 1.22.7
 
 require (
 	github.com/kubernetes-csi/csi-lib-utils v0.19.0
