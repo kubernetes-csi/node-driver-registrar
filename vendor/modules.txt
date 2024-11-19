@@ -307,7 +307,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/apimachinery v0.31.1
+# k8s.io/apimachinery v0.31.2
 ## explicit; go 1.22.0
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/apis/meta/v1
@@ -334,10 +334,10 @@ k8s.io/apimachinery/pkg/util/version
 k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v0.31.1
+# k8s.io/client-go v0.31.2
 ## explicit; go 1.22.0
 k8s.io/client-go/util/testing
-# k8s.io/component-base v0.31.1
+# k8s.io/component-base v0.31.2
 ## explicit; go 1.22.0
 k8s.io/component-base/cli/flag
 k8s.io/component-base/featuregate
@@ -374,7 +374,7 @@ k8s.io/kube-openapi/pkg/internal
 k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json
 k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubelet v0.31.1
+# k8s.io/kubelet v0.31.2
 ## explicit; go 1.22.0
 k8s.io/kubelet/pkg/apis/pluginregistration/v1
 # k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
@@ -387,6 +387,9 @@ k8s.io/utils/strings/slices
 ## explicit; go 1.18
 sigs.k8s.io/json
 sigs.k8s.io/json/internal/golang/encoding/json
-# sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+# sigs.k8s.io/structured-merge-diff/v4 v4.4.3
 ## explicit; go 1.13
 sigs.k8s.io/structured-merge-diff/v4/value
+# sigs.k8s.io/yaml v1.4.0
+## explicit; go 1.12
+sigs.k8s.io/yaml/goyaml.v2
