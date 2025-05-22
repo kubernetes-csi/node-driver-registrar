@@ -5,11 +5,11 @@ go 1.24.0
 toolchain go1.24.3
 
 require (
-	github.com/kubernetes-csi/csi-lib-utils v0.21.0
+	github.com/kubernetes-csi/csi-lib-utils v0.22.0
 	golang.org/x/sys v0.33.0
 	google.golang.org/grpc v1.72.0
-	k8s.io/client-go v0.33.0
-	k8s.io/component-base v0.33.0
+	k8s.io/client-go v0.33.1
+	k8s.io/component-base v0.33.1
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubelet v0.33.0
 )
@@ -50,6 +50,7 @@ require (
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
@@ -58,7 +59,7 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.33.0 // indirect
+	k8s.io/apimachinery v0.33.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
