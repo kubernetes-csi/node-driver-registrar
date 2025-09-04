@@ -78,6 +78,8 @@ type registrationServer struct {
 	driverName string
 	endpoint   string
 	version    []string
+
+	registerapi.UnsafeRegistrationServer
 }
 
 var _ registerapi.RegistrationServer = registrationServer{}
