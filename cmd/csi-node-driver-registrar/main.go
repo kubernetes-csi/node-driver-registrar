@@ -96,7 +96,7 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	logger := klog.FromContext(ctx)
-	logger.Info("Received GetInfo call", "request", req)
+	logger.V(4).Info("Received GetInfo call", "request", req)
 
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
