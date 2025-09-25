@@ -141,7 +141,7 @@ func httpServer(ctx context.Context, socketPath string, httpEndpoint string, csi
 
 func checkLiveRegistrationSocket(ctx context.Context, socketFile, csiDriverName string) error {
 	logger := klog.FromContext(ctx)
-	logger.V(2).Info("Attempting to open a gRPC connection", "socketfile", socketFile)
+	logger.V(4).Info("Attempting to open a gRPC connection", "socketfile", socketFile)
 	grpcConn, err := connection.ConnectWithoutMetrics(ctx, socketFile)
 	if err != nil {
 		return fmt.Errorf("error connecting to node-registrar socket %s: %v", socketFile, err)
@@ -149,7 +149,7 @@ func checkLiveRegistrationSocket(ctx context.Context, socketFile, csiDriverName 
 
 	defer closeGrpcConnection(logger, socketFile, grpcConn)
 
-	logger.V(2).Info("Calling node registrar to check if it still responds")
+	logger.V(4).Info("Calling node registrar to check if it still responds")
 	ctx, cancel := context.WithTimeout(context.Background(), *operationTimeout)
 	defer cancel()
 
