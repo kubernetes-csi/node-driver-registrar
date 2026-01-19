@@ -39,15 +39,6 @@ import (
 )
 
 const (
-	// Name of node annotation that contains JSON map of driver names to node
-	// names
-	annotationKey = "csi.volume.kubernetes.io/nodeid"
-
-	// Verify (and update, if needed) the node ID at this frequency.
-	sleepDuration = 2 * time.Minute
-)
-
-const (
 	// ModeKubeletRegistrationProbe makes node-driver-registrar act as an exec probe
 	// that checks if the kubelet plugin registration succeeded.
 	ModeKubeletRegistrationProbe = "kubelet-registration-probe"
@@ -96,7 +87,7 @@ func newRegistrationServer(driverName string, endpoint string, versions []string
 // GetInfo is the RPC invoked by plugin watcher
 func (e registrationServer) GetInfo(ctx context.Context, req *registerapi.InfoRequest) (*registerapi.PluginInfo, error) {
 	logger := klog.FromContext(ctx)
-	logger.Info("Received GetInfo call", "request", req)
+	logger.V(4).Info("Received GetInfo call", "request", req)
 
 	return &registerapi.PluginInfo{
 		Type:              registerapi.CSIPlugin,
@@ -168,10 +159,6 @@ func main() {
 	if *connectionTimeout != 0 {
 		logger.Info("--connection-timeout is deprecated and will have no effect")
 	}
-
-	// Once https://github.com/container-storage-interface/spec/issues/159 is
-	// resolved, if plugin does not support PUBLISH_UNPUBLISH_VOLUME, then we
-	// can skip adding mapping to "csi.volume.kubernetes.io/nodeid" annotation.
 
 	logger.V(1).Info("Attempting to open a gRPC connection", "csiAddress", *csiAddress)
 	ctx := klog.NewContext(context.Background(), logger)
