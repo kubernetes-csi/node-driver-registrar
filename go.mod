@@ -3,7 +3,7 @@ module github.com/kubernetes-csi/node-driver-registrar
 go 1.25.0
 
 require (
-	github.com/kubernetes-csi/csi-lib-utils v0.23.1
+	github.com/kubernetes-csi/csi-lib-utils v0.23.2
 	golang.org/x/sys v0.38.0
 	google.golang.org/grpc v1.72.2
 	k8s.io/client-go v0.35.0
