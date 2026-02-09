@@ -3,7 +3,7 @@ module github.com/kubernetes-csi/node-driver-registrar
 go 1.25.0
 
 require (
-	github.com/kubernetes-csi/csi-lib-utils v0.23.1
+	github.com/kubernetes-csi/csi-lib-utils v0.23.2
 	golang.org/x/sys v0.40.0
 	google.golang.org/grpc v1.78.0
 	k8s.io/client-go v0.35.0
@@ -73,7 +73,7 @@ require (
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.1 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 )
 
 replace k8s.io/api => k8s.io/api v0.35.0
