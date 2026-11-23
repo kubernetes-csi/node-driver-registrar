@@ -1,3 +1,38 @@
+# Release notes for v2.18.1
+
+[Documentation](https://kubernetes-csi.github.io)
+
+## Changes by Kind
+
+### Bug or Regression
+
+- Update golang.org/x/net to v0.62.0 and go.opentelemetry.io/otel to v1.47.0 to fix CVE-2026-78663 (CRITICAL), CVE-2026-78659, CVE-2026-78660, CVE-2026-78669, CVE-2026-97032, CVE-2026-78661 and CVE-2026-97045 and CVE-2026-128085. ([#639](https://github.com/kubernetes-csi/node-driver-registrar/pull/639), [@grant-he](https://github.com/grant-he))
+
+### Other (Cleanup or Flake)
+
+- Build with Go 1.26.11 to fix CVE-2026-97054. ([#637](https://github.com/kubernetes-csi/node-driver-registrar/pull/637), [@grant-he](https://github.com/grant-he))
+
+## Dependencies
+
+### Added
+- go.opentelemetry.io/otel/log: v1.47.0
+
+### Changed
+- go.opentelemetry.io/otel/metric: v1.46.0 → v1.47.0
+- go.opentelemetry.io/otel/trace: v1.46.0 → v1.47.0
+- go.opentelemetry.io/otel: v1.46.0 → v1.47.0
+- golang.org/x/crypto: v0.55.0 → v0.58.0
+- golang.org/x/mod: v0.38.0 → v0.41.0
+- golang.org/x/net: v0.58.0 → v0.62.0
+- golang.org/x/sync: v0.22.0 → v0.24.0
+- golang.org/x/sys: v0.47.0 → v0.49.0
+- golang.org/x/term: v0.45.0 → v0.47.0
+- golang.org/x/text: v0.41.0 → v0.43.0
+- golang.org/x/tools: v0.48.0 → v0.51.0
+
+### Removed
+_Nothing has changed._
+
 # Release notes for v2.18.0
 
 [Documentation](https:/kubernetes-csi.github.io)
